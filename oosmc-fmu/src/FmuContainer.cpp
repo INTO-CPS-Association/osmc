@@ -27,10 +27,10 @@
 
 
 FmuContainer::FmuContainer(const fmi2CallbackFunctions *mFunctions, bool logginOn, const char *mName)
-        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), precision(10){
+        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), precision(10), core(mFunctions, mName){
 
     // Set the default safe tolerance
-    this->core->getData()[safeToleranceId]=ScalarVariableBaseValue(10000);
+    this->core.getData()[safeToleranceId]=ScalarVariableBaseValue(10000);
 
     this->state=instantiated;
 }
@@ -76,7 +76,7 @@ bool FmuContainer::fmi2GetMaxStepsize(fmi2Real *size) {
 bool FmuContainer::getBoolean(const fmi2ValueReference *vr, size_t nvr, fmi2Boolean *value) {
     try {
         for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Boolean>(this->core->getData().at(vr[i]));
+            value[i] = std::get<fmi2Boolean>(this->core.getData().at(vr[i]));
         }
 
         return true;
@@ -89,7 +89,7 @@ bool FmuContainer::getBoolean(const fmi2ValueReference *vr, size_t nvr, fmi2Bool
 bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Integer *value) {
     try {
         for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Integer>(this->core->getData().at(vr[i]));
+            value[i] = std::get<fmi2Integer>(this->core.getData().at(vr[i]));
         }
 
         return true;
@@ -102,7 +102,7 @@ bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Inte
 bool FmuContainer::getReal(const fmi2ValueReference *vr, size_t nvr, fmi2Real *value) {
     try {
         for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Real>(this->core->getData().at(vr[i]));
+            value[i] = std::get<fmi2Real>(this->core.getData().at(vr[i]));
         }
 
         return true;
@@ -115,7 +115,7 @@ bool FmuContainer::getReal(const fmi2ValueReference *vr, size_t nvr, fmi2Real *v
 bool FmuContainer::getString(const fmi2ValueReference *vr, size_t nvr, fmi2String *value) {
     try {
         for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<std::string>(this->core->getData().at(vr[i])).c_str();
+            value[i] = std::get<std::string>(this->core.getData().at(vr[i])).c_str();
         }
 
         return true;
@@ -188,12 +188,12 @@ bool FmuContainer::setString(const fmi2ValueReference *vr, size_t nvr, const fmi
 
 bool FmuContainer::beginInitialize() {
     this->state = initializing;
-    return false;
+    return true;
 }
 
 bool FmuContainer::endInitialize() {
     this->state = initialized;
-    return false;
+    return true;
 }
 
 

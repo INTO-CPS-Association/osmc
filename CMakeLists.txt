@@ -59,5 +59,3 @@ add_subdirectory(thirdparty/googletest)
 
 add_subdirectory(osmc-core)
 add_subdirectory(oosmc-fmu)
-
-

@@ -92,7 +92,7 @@ public:
 
 private:
     DataPoint currentData;
-    FmuContainerCore *core;
+    FmuContainerCore core;
     FMIState state;
 
     const bool loggingOn;

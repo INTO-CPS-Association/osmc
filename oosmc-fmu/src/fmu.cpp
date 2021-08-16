@@ -91,6 +91,8 @@ extern "C" fmi2Component fmi2Instantiate(fmi2String instanceName,
                                          fmi2Boolean visible,
                                          fmi2Boolean loggingOn) {
 
+    cout << "instantiate called" << endl;
+
     if (loggingOn) {
         LOG(functions, instanceName, fmi2OK, "logFmiCall",
             "FMU: Called instantiate with instance '%s' and GUID '%s'", instanceName,
@@ -101,6 +103,8 @@ extern "C" fmi2Component fmi2Instantiate(fmi2String instanceName,
 
     auto *container =
             new FmuContainer(functions,loggingOn, instanceName);
+
+    cout << "Container created" << endl;
 
     g_clients.push_back(container);
 

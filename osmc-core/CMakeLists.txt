@@ -16,7 +16,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 file(GLOB_RECURSE CPP_FILES src/*.cpp)
 file(GLOB C_FILES src/*.c)
 
-add_library(osmc-core STATIC ${C_FILES} ${CPP_FILES})
+add_library(osmc-core STATIC ${C_FILES} ${CPP_FILES} src/CallBackTimer.h)
 target_link_libraries(osmc-core)
 set_target_properties(osmc-core
         PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -35,7 +35,7 @@ list(FILTER CPP_FILES EXCLUDE REGEX ".*src\\/main\\.cpp")
 file(GLOB CPP_TEST_FILES test/*.cpp)
 list(FILTER CPP_TEST_FILES EXCLUDE REGEX ".*_it.cpp")
 
-add_executable(unit-test-${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${CPP_TEST_FILES})
+add_executable(unit-test-${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${CPP_TEST_FILES} test/core_test.cpp)
 target_link_libraries(unit-test-${PROJECT_NAME} gtest_main)
 
 if (WIN32)

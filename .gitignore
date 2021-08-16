@@ -69,3 +69,6 @@ osmc-core/osmc-core.cbp
 osmc-core/rabbitmq-core.cbp
 osmc-core/unit-test-osmc-core
 OSMCProject.cbp
+**/*.cbp
+
+googletest/generated/
