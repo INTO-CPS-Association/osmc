@@ -31,9 +31,6 @@ jobs:
             echo "::add-path::C:\msys64\mingw64\bin"
 
         - name: run cmake
-          env:
-            CC: clang-12
-            CXX: clang++-12
           run: |
             cmake .
 
