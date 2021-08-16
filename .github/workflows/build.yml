@@ -24,7 +24,7 @@ jobs:
 
         - name: run make
           run: |
-            make .
+            make
           
 
 
