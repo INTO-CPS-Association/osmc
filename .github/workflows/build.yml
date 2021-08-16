@@ -25,7 +25,8 @@ jobs:
           with:
             version: latest
             platform: x64
-        - name: CLANG to path
+
+        - name: CLANG to path WINDOWS
           if: matrix.os == 'windows-latest'
 ##https://stackoverflow.com/a/64831469
           run: |
@@ -44,9 +45,15 @@ jobs:
           run: |
             cmake .
 
-        - name: run make
+        - name: run make NON WINDOWS
+          if: matrix.os != 'windows-latest'
           run: |
             make
+
+        - name: run ninja windows
+          if: matrix.os == 'windows-latest' 
+          run: |
+            ninja
           
 
 
