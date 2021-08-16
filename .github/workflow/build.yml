@@ -1,0 +1,30 @@
+name: osmc
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest , macos-latest ]
+
+    steps: 
+        - uses: actions/checkout@v2
+          with:
+            submodules: true
+
+        - uses: lukka/get-cmake@latest
+
+        - name: run cmake
+          run: |
+            cmake .
+
+        - name: run make
+          run: |
+            make .
+          
+
+

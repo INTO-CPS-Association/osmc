@@ -1,0 +1,6 @@
+[submodule "thirdparty/fmi"]
+	path = thirdparty/fmi
+	url = https://github.com/INTO-CPS-Association/fmi
+[submodule "thirdparty/googletest"]
+	path = thirdparty/googletest
+	url = https://github.com/google/googletest.git

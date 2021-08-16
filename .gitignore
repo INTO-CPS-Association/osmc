@@ -30,3 +30,42 @@
 *.exe
 *.out
 *.app
+
+# cmake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+
+bin
+build
+thirdparty/external
+thirdparty/build*
+
+# Apple stuff
+*DS_Store
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode/
+oosmc-fmu/it-test-osmc
+oosmc-fmu/osmc-main
+oosmc-fmu/osmc.cbp
+oosmc-fmu/rabbitmq.cbp
+oosmc-fmu/unit-test-osmc
+osmc-core/it-test-osmc-core
+osmc-core/osmc-core.cbp
+osmc-core/rabbitmq-core.cbp
+osmc-core/unit-test-osmc-core
+OSMCProject.cbp
