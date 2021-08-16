@@ -33,7 +33,7 @@ jobs:
         - name: run cmake
           env:
             CC: clang-12
-            CCX: clang++-12
+            CXX: clang++-12
           run: |
             cmake .
 
