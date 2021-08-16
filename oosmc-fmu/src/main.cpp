@@ -5,7 +5,7 @@
 
 #include <cstdlib>
 #include <ctime>
-#include <string>
+#include <string.h>
 
 #include <iomanip>
 #ifdef _WIN32
