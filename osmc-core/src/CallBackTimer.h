@@ -6,6 +6,7 @@
 #define OSMCPROJECT_CALLBACKTIMER_H
 #include <atomic>
 #include <thread>
+#include <functional>
 // https://stackoverflow.com/a/30425945
 class CallBackTimer
 {
