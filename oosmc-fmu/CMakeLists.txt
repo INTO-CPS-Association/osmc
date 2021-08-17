@@ -65,22 +65,34 @@ endif ()
 file(GLOB CPP_TEST_FILES test/*.cpp)
 list(FILTER CPP_TEST_FILES EXCLUDE REGEX ".*_it.cpp")
 
-add_executable(unit-test-${PROJECT_NAME}  ${CPP_TEST_FILES})
-target_link_libraries(unit-test-${PROJECT_NAME} gtest_main osmc)
+IF(CPP_TEST_FILES)
+    add_executable(unit-test-${PROJECT_NAME}  ${CPP_TEST_FILES})
+    target_link_libraries(unit-test-${PROJECT_NAME} gtest_main osmc)
+    if (WIN32)
+        add_test(NAME unit-test-${PROJECT_NAME} COMMAND wine unit-test-${PROJECT_NAME}   --gtest_output=xml:gtestresults.xml)
+    else ()
+        add_test(NAME unit-test-${PROJECT_NAME} COMMAND unit-test-${PROJECT_NAME}  --gtest_output=xml:gtestresults.xml)
+    endif ()
+ELSE()
+    MESSAGE("Skipping unit test build as there are no unit tests.")
+ENDIF()
 
-if (WIN32)
-    add_test(NAME unit-test-${PROJECT_NAME} COMMAND wine unit-test-${PROJECT_NAME}   --gtest_output=xml:gtestresults.xml)
-else ()
-    add_test(NAME unit-test-${PROJECT_NAME} COMMAND unit-test-${PROJECT_NAME}  --gtest_output=xml:gtestresults.xml)
-endif ()
+
 
 # ---------------------------- Integration TESTS ------------------------------
 
 file(GLOB CPP_TEST_FILES test/*.cpp)
 list(FILTER CPP_TEST_FILES INCLUDE REGEX ".*_it.cpp")
 
-add_executable(it-test-${PROJECT_NAME} ${CPP_TEST_FILES})
-target_link_libraries(it-test-${PROJECT_NAME} gtest_main osmc)
+IF(CPP_TEST_FILES)
+    add_executable(it-test-${PROJECT_NAME} ${CPP_TEST_FILES})
+    target_link_libraries(it-test-${PROJECT_NAME} gtest_main osmc)
+ELSE()
+    MESSAGE("Skipping integration test build as there are no integration tests.")
+ENDIF()
+
+
+
 
 
 #################################### INSTALL targets ####################################
