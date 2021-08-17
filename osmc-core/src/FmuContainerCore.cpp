@@ -32,8 +32,28 @@ std::map<FmuContainerCore::ScalarVariableId, ScalarVariableBaseValue> FmuContain
     return this->data;
 }
 
+void FmuContainerCore::setPort(int port){
+    this->port = port;
+}
 
+bool FmuContainerCore::startWebserver(){
+    if(!this->webserverStarted)
+    {
+        // If no webserver handler has been explictely set, then create and set the default.
+        if(!this->webserverHandler)
+        {
+            this->webserverHandler = [this](){return this->outOfSync.load();};
+        }
+        this->webserver.RegisterOOSHandler(this->webserverHandler);
+        this->webserver.startServer(this->port);
+        this->webserverStarted = true;
+        return true;
+    }
+    else {
+        return false;
+    }
 
+}
 bool FmuContainerCore::startRealTimeClock() {
     if(this->real_time_clock.first == StateBinary::unset) {
         auto realTimeCheckInternalIDValue = this->data.find(realTimeCheckInternalID);
@@ -119,6 +139,17 @@ void FmuContainerCore::setSafeTolerance(int safeToleranceMs) {
 void FmuContainerCore::setRealTimeCheckInterval(int realTimeCheckIntervalMs) {
     this->data[realTimeCheckInternalID] = ScalarVariableBaseValue(realTimeCheckIntervalMs);
 
+}
+
+bool FmuContainerCore::setWebserverHandler(std::function<bool(void)> webserverHandler) {
+    if(!this->webserverStarted) {
+        this->webserverHandler = webserverHandler;
+        return true;
+    }
+    else {
+        FmuContainerCore_LOG(fmi2Error, "logAll", "The webserver has already been started. Cannot set a new handler.","");
+        return false;
+    }
 }
 
 void FmuContainerCore::setRecoveredCallbackFunction(std::function<void(void)> recoveredCallbackFunction) {

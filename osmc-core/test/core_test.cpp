@@ -13,7 +13,7 @@ namespace {
         cout << " OutOfSync test" << endl;
 
         FmuContainerCore core = FmuContainerCore(nullptr, nullptr);
-        // 500 milliseconds safe tolerance
+        // Safe tolerance
         int safeToleranceMs = 100;
         core.setSafeTolerance(safeToleranceMs);
         double currentSimulationTime = 0.0;

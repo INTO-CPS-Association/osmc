@@ -17,6 +17,7 @@
 #include <variant>
 #include "CallBackTimer.h"
 #include <atomic>
+#include "Webserver.h"
 
 #include "../../thirdparty/fmi/include/fmi2Functions.h"
 
@@ -46,6 +47,23 @@ public:
     void setRecoveredCallbackFunction(std::function<void(void)> recoveredCallbackFunction);
     void setRealTimeCheckInterval(int realTimeCheckIntervalMs);
     ~FmuContainerCore();
+    /**
+     * Sets the handler of the OOS get request IFF the web server has not been started yet.
+     * @param webserverHandler
+     * @return
+     */
+    bool setWebserverHandler(std::function<bool(void)> webserverHandler);
+    /**
+     * Sets the port of the web server IFF the web server has not been started yet
+     * @param port
+     */
+    void setPort(int port);
+    /**
+     * Starts the web server.
+     * Uses a default web handler if one has not been explcitely provided.
+     * @return true if the web server started, false otherwise
+     */
+    bool startWebserver();
 
 
 private:
@@ -66,6 +84,13 @@ private:
     std::function<void(double, int)> outOfSyncCallbackFunction;
     std::function<void()> recoveredCallbackFunction;
     std::atomic<bool> outOfSync = std::atomic<bool>(false);
+    int port = 8080;
+    Webserver webserver;
+    std::function<bool(void)> webserverHandler;
+
+
+    bool webserverStarted = false;
+
 };
 
 #endif //RABBITMQFMUPROJECT_FMUCONTAINERCORE_H

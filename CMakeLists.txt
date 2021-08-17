@@ -55,7 +55,11 @@ message("Third parties libraries will use search path: ${THIRD_PARTY_LIBRARIES_R
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 add_subdirectory(thirdparty/googletest)
-
+#add_subdirectory(thirdparty/restinio/dev)
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+add_subdirectory(thirdparty/cpp-httplib)
 
 add_subdirectory(osmc-core)
 add_subdirectory(oosmc-fmu)

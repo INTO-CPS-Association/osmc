@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/fmi/include)
-include_directories(${gtest_SOURCE_DIR}/include)
 
 add_definitions(-DFMI_COSIMULATION)
 
@@ -24,10 +23,6 @@ endif ()
 file(GLOB_RECURSE CPP_FILES src/*.cpp)
 list(FILTER CPP_FILES EXCLUDE REGEX "main.cpp")
 file(GLOB C_FILES src/*.c)
-
-# Main
-add_executable(${PROJECT_NAME}-main ${C_FILES} ${CPP_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(${PROJECT_NAME}-main osmc-core)
 
 message("Creating library osmc with files: ${C_FILES} and ${CPP_FILES}")
 add_library(osmc SHARED ${C_FILES} ${CPP_FILES})
@@ -52,6 +47,10 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
 endif ()
 
+# Main
+add_executable(${PROJECT_NAME}-main ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+target_link_libraries(${PROJECT_NAME}-main osmc)
+
 #################################### TESTS ####################################
 
 list(FILTER CPP_FILES EXCLUDE REGEX ".*src\\/main\\.cpp")
@@ -66,8 +65,8 @@ endif ()
 file(GLOB CPP_TEST_FILES test/*.cpp)
 list(FILTER CPP_TEST_FILES EXCLUDE REGEX ".*_it.cpp")
 
-add_executable(unit-test-${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${CPP_TEST_FILES})
-target_link_libraries(unit-test-${PROJECT_NAME} gtest_main osmc-core)
+add_executable(unit-test-${PROJECT_NAME}  ${CPP_TEST_FILES})
+target_link_libraries(unit-test-${PROJECT_NAME} gtest_main osmc)
 
 if (WIN32)
     add_test(NAME unit-test-${PROJECT_NAME} COMMAND wine unit-test-${PROJECT_NAME}   --gtest_output=xml:gtestresults.xml)
@@ -80,8 +79,8 @@ endif ()
 file(GLOB CPP_TEST_FILES test/*.cpp)
 list(FILTER CPP_TEST_FILES INCLUDE REGEX ".*_it.cpp")
 
-add_executable(it-test-${PROJECT_NAME} ${C_FILES} ${CPP_FILES} ${CPP_TEST_FILES})
-target_link_libraries(it-test-${PROJECT_NAME} gtest_main osmc-core)
+add_executable(it-test-${PROJECT_NAME} ${CPP_TEST_FILES})
+target_link_libraries(it-test-${PROJECT_NAME} gtest_main osmc)
 
 
 #################################### INSTALL targets ####################################
