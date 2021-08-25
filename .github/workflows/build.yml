@@ -26,7 +26,7 @@ jobs:
             version: latest
             platform: x64
 
-        - name: CLANG to path WINDOWS
+        - name: Prepare MSYS on windows
           if: matrix.os == 'windows-latest'
 ##https://stackoverflow.com/a/64831469
           run: |
@@ -39,9 +39,6 @@ jobs:
 
         - name: run cmake windows
           if: matrix.os == 'windows-latest'
-          env:
-            CC: clang
-            CXX: clang++
           run: |
             cmake .
 
