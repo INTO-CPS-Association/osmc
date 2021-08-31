@@ -134,7 +134,7 @@ extern "C" fmi2Status fmi2SetupExperiment(
         return fmi2OK;
     }
 
-    return fmi2OK;
+    return fmi2Fatal;
 }
 
 extern "C" fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
@@ -164,7 +164,7 @@ extern "C" fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2OK;
     }
 
-    return fmi2OK;
+    return fmi2Fatal;
 }
 
 extern "C" fmi2Status fmi2Terminate(fmi2Component c) {
@@ -202,7 +202,6 @@ extern "C" void fmi2FreeInstance(fmi2Component c) {
         LOG(fmu->m_functions, fmu->m_name.c_str(), fmi2OK, "logAll",
             "fmi2FreeInstance '%s'",fmu->m_name.c_str());
     }
-
 
     if (fmu != NULL) {
         delete fmu;
@@ -456,7 +455,7 @@ extern "C" fmi2Status fmi2DoStep(fmi2Component c,
         return fmi2OK;
     }
 
-    return fmi2Discard;
+    return fmi2Fatal;
 }
 
 extern "C" fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s,

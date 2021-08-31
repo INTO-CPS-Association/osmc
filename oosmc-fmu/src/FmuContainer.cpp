@@ -27,15 +27,11 @@
 
 
 FmuContainer::FmuContainer(const fmi2CallbackFunctions *mFunctions, bool logginOn, const char *mName)
-        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), precision(10), core(mFunctions, mName){
-
-    // Set the default safe tolerance
-    this->core.getData()[safeToleranceId]=ScalarVariableBaseValue(10000);
-
-    this->state=instantiated;
+        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), precision(10), core(mFunctions, mName, realTimeCheckIntervalInitial, safeToleranceInitial){
 }
 
 FmuContainer::~FmuContainer() {
+    this->terminate();
 
 }
 
@@ -48,16 +44,40 @@ bool FmuContainer::isLoggingOn() {
  ###################################################*/
 
 bool FmuContainer::setup(fmi2Real startTime) {
-    return true;
+    if(this->state != FMIState::instantiated){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "Setup called in the wrong state.",
+                         "");
+        this->state = FMIState::error;
+        return false;
+    }
+    if(startTime != 0.0) {
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "Expected startTime to be 0.0. Actual start time was: %f",
+                         startTime);
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
-bool FmuContainer::terminate() { return true; }
+bool FmuContainer::terminate() {
+    this->state = FMIState::terminated;
+    this->core.terminate();
+    return true;
+}
 
 
 fmi2ComponentEnvironment FmuContainer::getComponentEnvironment() { return (fmi2ComponentEnvironment) this; }
 
 bool FmuContainer::step(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    return false;
+    if(this->state != FMIState::initialized){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "Step called in the wrong state.",
+                         "");
+        this->state = FMIState::error;
+        return false;
+    }
+    this->core.setCurrentSimulationTime(currentCommunicationPoint + communicationStepSize);
+    this->core.checkThreshold();
 }
 
 /*####################################################
@@ -74,54 +94,67 @@ bool FmuContainer::fmi2GetMaxStepsize(fmi2Real *size) {
  ###################################################*/
 
 bool FmuContainer::getBoolean(const fmi2ValueReference *vr, size_t nvr, fmi2Boolean *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Boolean>(this->core.getData().at(vr[i]));
-        }
 
+    // The only valid boolean is 2
+    if(nvr == 1 && vr[0] == outOfSyncId){
+        value[0] = std::get<fmi2Boolean>(this->core.getData().at(outOfSyncId));
         return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "getBoolean Out of Range error: " << oor.what() << '\n';
+    }
+    else {
+        if(nvr != 1){
+            FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getBoolean received invalid arguments. nvr expected: 1, actual: %zu. ",
+                                      nvr);
+        }
+        else {
+            if (vr[0] != outOfSyncId){
+                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getBoolean received invalid arguments. Value references allowed: %i, actual: %i. ",
+                                 outOfSyncId, value[0]);
+            }
+        }
         return false;
     }
 }
 
 bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Integer *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Integer>(this->core.getData().at(vr[i]));
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "getInteger Out of Range error: " << oor.what() << '\n';
+    if (nvr > 2 || nvr == 0)
+    {
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getInteger received invalid arguments. nvr expected: 1 to 2, actual: %zu. ",
+                         nvr);
         return false;
+    }
+    else {
+        for(int i = 0; i < nvr; i++){
+            if(vr[i] == safeToleranceId || vr[i] == realTimeCheckIntervalID)
+            {
+                value[i] = std::get<fmi2Integer>(this->core.getData().at(vr[i]));
+            }
+            else {
+                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getInteger received invalid arguments. Value references allowed: 1 to 2, actual: %i. ",
+                                 value[i]);
+                return false;
+            }
+        }
+        return true;
     }
 }
 
 bool FmuContainer::getReal(const fmi2ValueReference *vr, size_t nvr, fmi2Real *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<fmi2Real>(this->core.getData().at(vr[i]));
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "getReal Out of Range error: " << oor.what() << '\n';
+    if (nvr > 0){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getReal is invalid. There are no reals.","");
         return false;
+    }
+    else {
+        return true;
     }
 }
 
 bool FmuContainer::getString(const fmi2ValueReference *vr, size_t nvr, fmi2String *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            value[i] = std::get<std::string>(this->core.getData().at(vr[i])).c_str();
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "getString Out of Range error: " << oor.what() << '\n';
+    if (nvr > 0){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getString is invalid. There are no strings.","");
         return false;
+    }
+    else {
+        return true;
     }
 }
 
@@ -131,68 +164,85 @@ bool FmuContainer::getString(const fmi2ValueReference *vr, size_t nvr, fmi2Strin
  ###################################################*/
 
 bool FmuContainer::setBoolean(const fmi2ValueReference *vr, size_t nvr, const fmi2Boolean *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            FmuContainer_LOG(fmi2OK, "logAll", "Setting boolean ref %d = %d", vr[i], value[i]);
-            this->currentData.booleanValues[vr[i]] = value[i];
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "Out of Range error: " << oor.what() << '\n';
+    if (nvr > 0){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setBoolean is invalid. There are booleans to set.","");
         return false;
+    }
+    else {
+        return true;
     }
 }
 
 bool FmuContainer::setInteger(const fmi2ValueReference *vr, size_t nvr, const fmi2Integer *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            FmuContainer_LOG(fmi2OK, "logAll", "Setting integer ref %d = %d", vr[i], value[i]);
-            this->currentData.integerValues[vr[i]] = value[i];
+    // Only allow sets in the instantiated mode.
+    if(this->state == FMIState::instantiated)
+    {
+        if (nvr > 2 || nvr == 0)
+        {
+            FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. nvr expected: 1 to 2, actual: %zu. ",
+                             nvr);
+            return false;
         }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "Out of Range error: " << oor.what() << '\n';
+        else {
+            for(int i = 0; i < nvr; i++){
+                if(vr[i] == safeToleranceId || vr[i] == realTimeCheckIntervalID)
+                {
+                    this->core.getData()[vr[i]] = ScalarVariableBaseValue(value[i]);
+                }
+                else {
+                    FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 1 to 2, actual: %i. ",
+                                     value[i]);
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    else{
+        FmuContainer_LOG(fmi2OK, "logError", "setInteger is invalid in the instantiated state.","");
         return false;
     }
 }
 
 bool FmuContainer::setReal(const fmi2ValueReference *vr, size_t nvr, const fmi2Real *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            FmuContainer_LOG(fmi2OK, "logAll", "Setting real ref %d = %f", vr[i], value[i]);
-            this->currentData.doubleValues[vr[i]] = value[i];
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "Out of Range error: " << oor.what() << '\n';
+    if (nvr > 0){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setReal is invalid. There are reals to set.","");
         return false;
+    }
+    else {
+        return true;
     }
 }
 
 bool FmuContainer::setString(const fmi2ValueReference *vr, size_t nvr, const fmi2String *value) {
-    try {
-        for (int i = 0; i < nvr; i++) {
-            FmuContainer_LOG(fmi2OK, "logAll", "Setting string ref %d = %s", vr[i], value[i]);
-            this->currentData.stringValues[vr[i]] = string(value[i]);
-        }
-
-        return true;
-    } catch (const std::out_of_range &oor) {
-        std::cerr << "Out of Range error: " << oor.what() << '\n';
+    if (nvr > 0){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setString is invalid. There are no strings to set.","");
         return false;
+    }
+    else {
+        return true;
     }
 }
 
 bool FmuContainer::beginInitialize() {
-    this->state = initializing;
+    if(this->state != FMIState::instantiated){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "beginInitializationMode called in the wrong state.",
+                         "");
+        this->state = FMIState::error;
+        return false;
+    }
+    this->state = FMIState::initializing;
     return true;
 }
 
 bool FmuContainer::endInitialize() {
-    this->state = initialized;
+    if(this->state != FMIState::initializing){
+        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "exitInitializationMode called in the wrong state.",
+                         "");
+        this->state = FMIState::error;
+        return false;
+    }
+    this->state = FMIState::initialized;
     return true;
 }
 

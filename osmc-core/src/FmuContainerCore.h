@@ -24,8 +24,9 @@
 /*
  * These are the scalar variable IDs
  */
-const unsigned int safeToleranceId = 0;
-const unsigned int realTimeCheckInternalID = 1;
+const int safeToleranceId = 0;
+const int realTimeCheckIntervalID = 1;
+const int outOfSyncId = 2;
 
 
 
@@ -35,20 +36,52 @@ std::ostream &operator<<(std::ostream &os, const ScalarVariableBaseValue &c);
 class FmuContainerCore {
 
 public:
-    FmuContainerCore(const fmi2CallbackFunctions *mFunctions, const char *mName);
+    FmuContainerCore(const fmi2CallbackFunctions *mFunctions, const char *mName, int realTimeCheckIntervalMs,
+                     int safeToleranceMs);
+
     void setSafeTolerance(int safeToleranceMs);
+    int getSafeTolerance();
+
+
+    void setRealTimeCheckInterval(int realTimeCheckIntervalMs);
+    int getRealTimeCheckInterval();
+
+    /**
+     *
+     * @return
+     */
     bool startRealTimeClock();
     typedef unsigned int ScalarVariableId;
+
+    /**
+     * Returns the variables associated with the FMI interface.
+     * THIS VIOLATES ALL SET AND GET METHODS.
+     * See setSafeTolerance
+     * See getSafeTolerance
+     * @see setRealTimeCheckInterval
+     * @return
+     */
     std::map<ScalarVariableId, ScalarVariableBaseValue> getData();
     friend std::ostream &operator<<(std::ostream &os, const FmuContainerCore &c);
     void setCurrentSimulationTime(const double currentSimulationTimeMs);
-    unsigned int getSafeTolerance();
+
+    /**
+     * Set the function that is called upon out Of Sync
+     * @see checkThreshold
+     * @param recoveredCallbackFunction
+     */
     void setOutOfSyncCallbackFunction(std::function<void(double tDiff, int safeTolerance)> outOfSyncCallbackFunction);
+
+    /**
+     * Set the function that is called upon resynchronisation
+     * @see checkThreshold
+     * @param recoveredCallbackFunction
+     */
     void setRecoveredCallbackFunction(std::function<void(void)> recoveredCallbackFunction);
-    void setRealTimeCheckInterval(int realTimeCheckIntervalMs);
+
     ~FmuContainerCore();
     /**
-     * Sets the handler of the OOS get request IFF the web server has not been started yet.
+     * Sets the handler of the OutOfSync get request IFF the web server has not been started yet.
      * @param webserverHandler
      * @return
      */
@@ -58,31 +91,69 @@ public:
      * @param port
      */
     void setPort(int port);
+
     /**
      * Starts the web server.
-     * Uses a default web handler if one has not been explcitely provided.
+     * Uses a default web handler if one has not been explcitely provided via setWebserverHandler
      * @return true if the web server started, false otherwise
      */
     bool startWebserver();
 
+    /**
+     * Stops all activites controlled by the core
+     */
+    void terminate();
+
+    /**
+     * checkThreshold is called on request or automatically every realTimeCheckInterval milliseconds.
+     * It calculates realTimeDiff = now - real_time_clock_started.
+     * It calculates tDiff = |currentSimulationTime - realTimeDiff|
+     * It checks whether tDiff > safeTolerance
+     *      if so, it sets out of sync to true and invokes the outOfSyncCallbackFunction.
+     *      else, sets out of sync to false and invokes the inSyncCallbackFunction
+     * @see checkThresholdCallbackTimer
+     */
+    void checkThreshold();
+
+    bool getOutOfSync();
+
 
 private:
-    void checkThreshold();
-    CallBackTimer callBackTimer;
+
+    /**
+     * Upon starting the function invokes checkThreshold every realTimeCheckInterval milliseconds
+     * @see checkThreshold
+     */
+    CallBackTimer checkThresholdCallbackTimer;
+
+
     enum class StateBinary {unset, started,
         stopped};
     std::string printStateBinary(StateBinary stateBinary);
+    /**
+     * Variable container. See defines at the top of this file.
+     */
     std::map<ScalarVariableId, ScalarVariableBaseValue> data;
     const bool verbose;
     const fmi2CallbackFunctions* m_functions;
+    /**
+     * FMU Instance name
+     */
     const char *m_name;
-    std::chrono::time_point<std::chrono::system_clock> started;
-    std::pair<StateBinary, std::chrono::time_point<std::chrono::system_clock>> real_time_clock;
 
+    /**
+     * Contains a point in time when the clock was started
+     */
+    std::pair<StateBinary, std::chrono::time_point<std::chrono::system_clock>> real_time_clock_started;
+
+    /**
+     * Function to retrieve the current simulation time in milliseconds
+     * @return
+     */
     double getCurrentSimulationTimeMs();
     std::atomic<double> currentSimulationTime = std::atomic<double>(0.0);
     std::function<void(double, int)> outOfSyncCallbackFunction;
-    std::function<void()> recoveredCallbackFunction;
+    std::function<void()> inSyncCallbackFunction;
     std::atomic<bool> outOfSync = std::atomic<bool>(false);
     int port = 8080;
     Webserver webserver;
@@ -90,7 +161,6 @@ private:
 
 
     bool webserverStarted = false;
-
 };
 
 #endif //RABBITMQFMUPROJECT_FMUCONTAINERCORE_H

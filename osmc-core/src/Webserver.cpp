@@ -38,14 +38,14 @@ bool Webserver::isServerRunning() {
 }
 
 void Webserver::stop(){
-    svr.stop();
-}
-
-Webserver::~Webserver() {
     if(this->_thd.joinable()){
         svr.stop();
         this->_thd.join();
     }
+}
+
+Webserver::~Webserver() {
+    this->stop();
 }
 
 

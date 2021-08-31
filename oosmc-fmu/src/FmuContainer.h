@@ -19,7 +19,8 @@ using namespace std;
 #include <map>
 #include <ctime>
 
-const int safeInitial = 10000;
+const int safeToleranceInitial = 10000;
+const int realTimeCheckIntervalInitial = 500;
 
 #define mergeFieldMap(mapName, other) \
     for(auto& pair: other.mapName) \
@@ -45,7 +46,7 @@ struct DataPoint {
     }
 };
 
-enum FMIState {instantiated, initializing, initialized};
+enum class FMIState {instantiated, initializing, initialized, error, terminated};
 
 class FmuContainer {
 public:
@@ -93,13 +94,14 @@ public:
 private:
     DataPoint currentData;
     FmuContainerCore core;
-    FMIState state;
+    FMIState state = FMIState::instantiated;
 
     const bool loggingOn;
 
     unsigned long precision;
 
 
+    void destroy();
 };
 
 

@@ -28,18 +28,18 @@ public:
             _thd.join();
     }
 
-    void start(int interval, std::function<void(void)> func)
+    void start(int intervalMs, std::function<void(void)> func)
     {
         if( _execute.load(std::memory_order_acquire) ) {
             stop();
         };
         _execute.store(true, std::memory_order_release);
-        _thd = std::thread([this, interval, func]()
+        _thd = std::thread([this, intervalMs, func]()
                            {
                                while (_execute.load(std::memory_order_acquire)) {
                                    func();
                                    std::this_thread::sleep_for(
-                                           std::chrono::milliseconds(interval));
+                                           std::chrono::milliseconds(intervalMs));
                                }
                            });
     }

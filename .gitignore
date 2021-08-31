@@ -72,3 +72,7 @@ OSMCProject.cbp
 **/*.cbp
 
 googletest/generated/
+intocpsfmi-src
+httprequest
+thirdparty/cpp-httplib
+thirdparty/googletest

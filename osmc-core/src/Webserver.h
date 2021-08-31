@@ -17,6 +17,7 @@ public:
     void RegisterOOSHandler(std::function<bool(void)> handler);
     void startServer(int port);
     bool isServerRunning();
+    void stop();
     ~Webserver();
 
 
@@ -27,7 +28,7 @@ private:
     std::thread _thd;
     std::atomic<bool> started = std::atomic<bool>(false);
 
-    void stop();
+
 
     std::function<void(const httplib::Request &, httplib::Response &)> oosGetHandler;
 };

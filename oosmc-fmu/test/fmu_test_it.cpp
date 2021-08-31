@@ -45,7 +45,7 @@ namespace {
 
         cout << "Working directory is " << cCurrentPath << endl;
 
-        fmi2String instanceName = "rabbitmq";
+        fmi2String instanceName = "oosmc";
         fmi2Type fmuType = fmi2CoSimulation;
         fmi2String fmuGUID = "63ba49fe-07d3-402c-b9db-2df495167424";
         string currentUri = (string("file://") + string(cCurrentPath));
@@ -74,19 +74,23 @@ namespace {
                     c, toleranceDefined, tolerance,
                     startTime, stopTimeDefined, stopTime));
 
+            int safeToleranceMs = 100;
+            int realTimeCheckIntervalMs = 50;
+
+            /*size_t nvr = 2;
+            const fmi2ValueReference *valRefs2 = new fmi2ValueReference[nvr]{0,1};
+            fmi2Integer *integerValues2 = new fmi2Integer[nvr]{safeToleranceMs, realTimeCheckIntervalMs};
+             fmi2SetInteger(c, valRefs2, 2, integerValues2);
+*/
+            //typedef fmi2Status fmi2SetIntegerTYPE(fmi2Component, const fmi2ValueReference[], size_t, const fmi2Integer[]);
+            size_t nvr = 2;
+            unsigned int integerValrefs[nvr] = {0,1};
+            int integerValues[nvr] = {safeToleranceMs, realTimeCheckIntervalMs};
+            fmi2SetInteger(c, integerValrefs, nvr, integerValues);
+
             showStatus("fmi2EnterInitializationMode", fmi2EnterInitializationMode(c));
             showStatus("fmi2ExitInitializationMode", fmi2ExitInitializationMode(c));
 
-//            size_t nvr = 1;
-//            const fmi2ValueReference *vr = new fmi2ValueReference[nvr]{20};
-//            fmi2Real *value = new fmi2Real[nvr];
-//
-//            showStatus("fmi2GetReal", fmi2GetReal(c, vr, nvr, value));
-//            for (int i = 0; i < nvr; i++) {
-//                cout << "Ref: '" << vr[i] << "' Value '" << value[i] << "'" << endl;
-//            }
-//
-//
 //            fmi2Real currentCommunicationPoint = 0;
 //            fmi2Real communicationStepSize = 10;
 //            fmi2Boolean noSetFMUStatePriorToCurrentPoint = false;

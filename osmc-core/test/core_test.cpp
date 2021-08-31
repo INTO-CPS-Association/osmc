@@ -12,20 +12,21 @@ namespace {
     ) {
         cout << " OutOfSync test" << endl;
 
-        FmuContainerCore core = FmuContainerCore(nullptr, nullptr);
-        // Safe tolerance
+
         int safeToleranceMs = 100;
-        core.setSafeTolerance(safeToleranceMs);
-        double currentSimulationTime = 0.0;
-        core.setCurrentSimulationTime(currentSimulationTime);
         int realTimeCheckIntervalMs = 50;
-        core.setRealTimeCheckInterval(realTimeCheckIntervalMs);
+        double currentSimulationTime = 0.0;
+
+        FmuContainerCore core = FmuContainerCore(nullptr, nullptr, realTimeCheckIntervalMs, safeToleranceMs);
+
+        core.setCurrentSimulationTime(currentSimulationTime);
         atomic<bool> oos = atomic<bool>(false);
-        std::function<void(double, int)> cbFunction = [&oos](double tDiff, int safeTolerance) {
+        std::function<void(double, int)> oosCallbackFunction = [&oos](double tDiff, int safeTolerance) {
             oos.store(true);
         };
-        core.setOutOfSyncCallbackFunction(cbFunction);
+        core.setOutOfSyncCallbackFunction(oosCallbackFunction);
         core.startRealTimeClock();
+
         int sleepTimeMilliseconds = 200;
         this_thread::sleep_for(chrono::milliseconds(sleepTimeMilliseconds));
 
