@@ -88,3 +88,13 @@ jobs:
         with:
           name: osmc.dylib
           path: oosmcfmu/darwin64/osmc.dylib
+
+      - name: Zip folder
+        run: |
+          zip -r oosmcfmu.zip oosmcfmu
+
+      - name: Upload FMUartifact macos
+        uses: actions/upload-artifact@v2
+        with:
+          name: oosmcfmu
+          path: oosmcfmu
