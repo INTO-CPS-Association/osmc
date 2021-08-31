@@ -79,12 +79,12 @@ jobs:
           name: osmc.dll
           path: oosmcfmu/win64/osmc.dll
       - name: Download shared library
-          uses: actions/download-artifact@v2
-          with:
-            name: libosmc.so
-            path: oosmcfmu/linux64/
+        uses: actions/download-artifact@v2
+        with:
+          name: libosmc.so
+          path: oosmcfmu/linux64/
       - name: Download dylib
-          uses: actions/download-artifact@v2
-          with:
-            name: osmc.dylib
-            path: oosmcfmu/darwin64/osmc.dylib
+        uses: actions/download-artifact@v2
+        with:
+          name: osmc.dylib
+          path: oosmcfmu/darwin64/osmc.dylib
