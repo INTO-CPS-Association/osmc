@@ -77,23 +77,21 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: osmc.dll
-          path: oosmcfmu/win64/osmc.dll
+          path: oosmcfmu/binaries/win64/
+
       - name: Download shared library
         uses: actions/download-artifact@v2
         with:
           name: libosmc.so
-          path: oosmcfmu/linux64/
+          path: oosmcfmu/binaries/linux64/
+
       - name: Download dylib
         uses: actions/download-artifact@v2
         with:
           name: osmc.dylib
-          path: oosmcfmu/darwin64/osmc.dylib
+          path: oosmcfmu/binaries/darwin64/
 
-      - name: Zip folder
-        run: |
-          zip -r oosmcfmu.zip oosmcfmu
-
-      - name: Upload FMUartifact macos
+      - name: Upload FMU 
         uses: actions/upload-artifact@v2
         with:
           name: oosmcfmu
