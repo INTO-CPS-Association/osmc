@@ -83,7 +83,7 @@ namespace {
              fmi2SetInteger(c, valRefs2, 2, integerValues2);
 */
             //typedef fmi2Status fmi2SetIntegerTYPE(fmi2Component, const fmi2ValueReference[], size_t, const fmi2Integer[]);
-            size_t nvr = 2;
+            const size_t nvr = 2;
             unsigned int integerValrefs[nvr] = {0,1};
             int integerValues[nvr] = {safeToleranceMs, realTimeCheckIntervalMs};
             fmi2SetInteger(c, integerValrefs, nvr, integerValues);

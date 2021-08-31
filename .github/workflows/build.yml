@@ -46,6 +46,26 @@ jobs:
           if: matrix.os == 'windows-latest' 
           run: |
             ninja
-          
+        - name: ls osmc 
+          run: ls oosmc-fmu
 
+        - name: Upload artifact macos
+          if: matrix.os == 'macos-latest'
+          uses: actions/upload-artifact@v2
+          with:
+            name: darwin-x64/osmc.dylib
+            path: oosmc-fmu/osmc.dylib
 
+        - name: Upload artifact linux 
+          if: matrix.os == 'ubuntu-latest'
+          uses: actions/upload-artifact@v2
+          with:
+            name: linux-x64/libosmc.so
+            path: oosmc-fmu/osmc.so
+
+        - name: Upload artifact windows
+          if: matrix.os == 'windows-latest'
+          uses: actions/upload-artifact@v2
+          with:
+            name: win-x64/osmc.dll
+            path: oosmc-fmu/osmc.so
