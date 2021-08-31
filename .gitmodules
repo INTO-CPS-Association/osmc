@@ -4,6 +4,8 @@
 [submodule "thirdparty/googletest"]
 	path = thirdparty/googletest
 	url = https://github.com/google/googletest.git
+	ignore = untracked
 [submodule "thirdparty/cpp-httplib"]
 	path = thirdparty/cpp-httplib
 	url = git@github.com:yhirose/cpp-httplib.git
+	ignore = untracked
