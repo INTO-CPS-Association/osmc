@@ -56,7 +56,8 @@ jobs:
         - name: make test on Windows
           if: matrix.os == 'windows-latest'
           run: |
-            msys2 -c "make test"
+            oosmc-fmu/unit-test-osmc.exe
+            osmc-core/unit-test-osmc-core.exe
 
         - name: ls osmc 
           run: ls oosmc-fmu
