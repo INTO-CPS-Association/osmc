@@ -87,8 +87,15 @@ public:
 
     bool isLoggingOn();
 
+    /**
+     * Starts the core webserver
+     * @return
+     */
     bool beginInitialize();
-
+    /**
+    * Start the core real-time clock.
+    * @return
+    */
     bool endInitialize();
 
 private:

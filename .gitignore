@@ -74,3 +74,5 @@ OSMCProject.cbp
 googletest/generated/
 intocpsfmi-src
 httprequest
+
+**/gtestresults.xml

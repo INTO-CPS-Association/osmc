@@ -30,7 +30,7 @@ const int outOfSyncId = 2;
 
 
 
-typedef std::variant<int, bool, double, std::string> ScalarVariableBaseValue;
+typedef std::variant<int, double, std::string> ScalarVariableBaseValue;
 
 std::ostream &operator<<(std::ostream &os, const ScalarVariableBaseValue &c);
 class FmuContainerCore {
@@ -39,29 +39,28 @@ public:
     FmuContainerCore(const fmi2CallbackFunctions *mFunctions, const char *mName, int realTimeCheckIntervalMs,
                      int safeToleranceMs);
 
+    /**
+     * The allowed tolerance between the simulation time and the wall-clock time.
+     * @param safeToleranceMs
+     */
     void setSafeTolerance(int safeToleranceMs);
     int getSafeTolerance();
 
-
+    /**
+     * How often the threshold shall be checked
+     * @param realTimeCheckIntervalMs
+     */
     void setRealTimeCheckInterval(int realTimeCheckIntervalMs);
     int getRealTimeCheckInterval();
 
     /**
-     *
+     * Sets real_time_clock_started to now
+     * and starts the timer with realTimeCheckInterval and the checkthreshold function as callback
      * @return
      */
     bool startRealTimeClock();
     typedef unsigned int ScalarVariableId;
 
-    /**
-     * Returns the variables associated with the FMI interface.
-     * THIS VIOLATES ALL SET AND GET METHODS.
-     * See setSafeTolerance
-     * See getSafeTolerance
-     * @see setRealTimeCheckInterval
-     * @return
-     */
-    std::map<ScalarVariableId, ScalarVariableBaseValue> getData();
     friend std::ostream &operator<<(std::ostream &os, const FmuContainerCore &c);
     void setCurrentSimulationTime(const double currentSimulationTimeMs);
 
@@ -75,9 +74,9 @@ public:
     /**
      * Set the function that is called upon resynchronisation
      * @see checkThreshold
-     * @param recoveredCallbackFunction
+     * @param inSyncCallbackFunction
      */
-    void setRecoveredCallbackFunction(std::function<void(void)> recoveredCallbackFunction);
+    void setInSyncCallbackFunction(std::function<void(void)> inSyncCallbackFunction);
 
     ~FmuContainerCore();
     /**
@@ -130,10 +129,6 @@ private:
     enum class StateBinary {unset, started,
         stopped};
     std::string printStateBinary(StateBinary stateBinary);
-    /**
-     * Variable container. See defines at the top of this file.
-     */
-    std::map<ScalarVariableId, ScalarVariableBaseValue> data;
     const bool verbose;
     const fmi2CallbackFunctions* m_functions;
     /**
@@ -161,6 +156,14 @@ private:
 
 
     bool webserverStarted = false;
+    /**
+     * Variable containing the safe tolerance in milliseconds
+     */
+    int safeToleranceMs;
+    /**
+     * Variable containing how often the checkThreshold shall be called by the timer
+     */
+    int realTimeCheckIntervalMs;
 };
 
 #endif //RABBITMQFMUPROJECT_FMUCONTAINERCORE_H

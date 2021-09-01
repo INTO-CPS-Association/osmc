@@ -25,15 +25,11 @@ FmuContainerCore::FmuContainerCore(const fmi2CallbackFunctions *mFunctions, cons
         : verbose(true), m_functions(mFunctions), m_name(mName){
     this->setRealTimeCheckInterval(realTimeCheckIntervalMs);
     this->setSafeTolerance(safeToleranceMs);
-    this->data[outOfSyncId] = ScalarVariableBaseValue(this->outOfSync.load());
-}
-
-std::map<FmuContainerCore::ScalarVariableId, ScalarVariableBaseValue> FmuContainerCore::getData() {
-    return this->data;
 }
 
 void FmuContainerCore::setPort(int port){
-    this->port = port;
+    if(!this->webserverStarted)
+        this->port = port;
 }
 
 bool FmuContainerCore::startWebserver(){
@@ -56,19 +52,10 @@ bool FmuContainerCore::startWebserver(){
 }
 bool FmuContainerCore::startRealTimeClock() {
     if(this->real_time_clock_started.first == StateBinary::unset) {
-        auto realTimeCheckInternalIDValue = this->data.find(realTimeCheckIntervalID);
-        // Check that the real time check internal ID value has been set
-        if (realTimeCheckInternalIDValue != data.end()){
             this->real_time_clock_started.second = std::chrono::system_clock::now();
             this->real_time_clock_started.first = StateBinary::started;
-            this->checkThresholdCallbackTimer.start(std::get<fmi2Integer>(realTimeCheckInternalIDValue->second), std::bind(&FmuContainerCore::checkThreshold, this));
+            this->checkThresholdCallbackTimer.start(this->getRealTimeCheckInterval(), std::bind(&FmuContainerCore::checkThreshold, this));
             return true;
-        }
-        else {
-            FmuContainerCore_LOG(fmi2Error, "logAll", "Real time check internal ID value has not been set","");
-            return false;
-        }
-
     }
     else {
         FmuContainerCore_LOG(fmi2Error, "logAll", "Invalid real time clock state: %s", this->printStateBinary(this->real_time_clock_started.first).c_str());
@@ -96,8 +83,9 @@ void FmuContainerCore::checkThreshold() {
     if(tdiff > this->getSafeTolerance())
     {
         // DT AND PT ARE OUT OF SYNC!
-        if(this->outOfSyncCallbackFunction)
-        this->outOfSyncCallbackFunction(tdiff, this->getSafeTolerance());
+        if(this->outOfSyncCallbackFunction) {
+            this->outOfSyncCallbackFunction(tdiff, this->getSafeTolerance());
+        }
         this->outOfSync.store(true);
     }
     else {
@@ -117,7 +105,7 @@ void FmuContainerCore::setCurrentSimulationTime(const double currentSimulationTi
 }
 
 int FmuContainerCore::getSafeTolerance() {
-    return std::get<fmi2Integer>(this->data[safeToleranceId]);
+    return this->safeToleranceMs;
 }
 
 void FmuContainerCore::setOutOfSyncCallbackFunction(std::function<void(double, int)> outOfSyncCallbackFunction) {
@@ -140,13 +128,12 @@ FmuContainerCore::~FmuContainerCore() {
 }
 
 void FmuContainerCore::setSafeTolerance(int safeToleranceMs) {
-    this->data[safeToleranceId] = ScalarVariableBaseValue(safeToleranceMs);
-
+    this->safeToleranceMs = safeToleranceMs;
 }
 
 void FmuContainerCore::setRealTimeCheckInterval(int realTimeCheckIntervalMs) {
-    this->data[realTimeCheckIntervalID] = ScalarVariableBaseValue(realTimeCheckIntervalMs);
-
+    if(this->real_time_clock_started.first == StateBinary::unset)
+        this->realTimeCheckIntervalMs = realTimeCheckIntervalMs;
 }
 
 bool FmuContainerCore::setWebserverHandler(std::function<bool(void)> webserverHandler) {
@@ -160,13 +147,13 @@ bool FmuContainerCore::setWebserverHandler(std::function<bool(void)> webserverHa
     }
 }
 
-void FmuContainerCore::setRecoveredCallbackFunction(std::function<void(void)> recoveredCallbackFunction) {
-    this->inSyncCallbackFunction = recoveredCallbackFunction;
+void FmuContainerCore::setInSyncCallbackFunction(std::function<void(void)> inSyncCallbackFunction) {
+    this->inSyncCallbackFunction = inSyncCallbackFunction;
 
 }
 
 int FmuContainerCore::getRealTimeCheckInterval() {
-    return std::get<fmi2Integer>(this->data[realTimeCheckIntervalID]);
+    return this->realTimeCheckIntervalMs;
 }
 
 bool FmuContainerCore::getOutOfSync() {
@@ -176,36 +163,11 @@ bool FmuContainerCore::getOutOfSync() {
 std::ostream &operator<<(std::ostream &os, FmuContainerCore &c) {
     os << "------------------------------ INFO ------------------------------" << "\n";
     os << "Data" << "\n";
-    for (auto &pair: c.getData()) {
-        os << "\tId: " << pair.first;
-        os << "value: " << pair.second;
-    }
+    os << "Safe tolerance: " << c.getSafeTolerance() << std::endl;
+    os << "Real Time Check Interval: " << c.getRealTimeCheckInterval() << std::endl;
+    os << "Out of sync: " << c.getOutOfSync() << std::endl;
     os << "\n";
     os << "------------------------------------------------------------------" << "\n";
     return os;
 }
-std::ostream &operator<<(std::ostream &os, const ScalarVariableBaseValue &c) {
-    if(std::holds_alternative<fmi2Integer>(c))
-    {
-        os<<"I" << std::get<fmi2Integer>(c);
-    }
-    else if(std::holds_alternative<fmi2Real>(c))
-    {
-        os<<"D" << std::get<fmi2Real>(c);
-    }
-    else if(std::holds_alternative<fmi2Boolean>(c))
-    {
-        os<<"B" << std::get<fmi2Boolean>(c);
-    }
-    else if(std::holds_alternative<std::string>(c))
-    {
-        os<<"S" << std::get<std::string>(c);
-    }
-    else{
-        os << "UNKNOWN VARIANT TYPE OF ScalarVariableBaseValue";
-    }
-    return os;
-}
-
-
 

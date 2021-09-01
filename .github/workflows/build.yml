@@ -41,11 +41,14 @@ jobs:
           if: matrix.os != 'windows-latest'
           run: |
             make
+            make test
 
         - name: run ninja windows
           if: matrix.os == 'windows-latest' 
           run: |
             ninja
+            ninja test
+
         - name: ls osmc 
           run: ls oosmc-fmu
 

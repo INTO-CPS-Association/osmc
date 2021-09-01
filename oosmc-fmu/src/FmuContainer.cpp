@@ -78,6 +78,7 @@ bool FmuContainer::step(fmi2Real currentCommunicationPoint, fmi2Real communicati
     }
     this->core.setCurrentSimulationTime(currentCommunicationPoint + communicationStepSize);
     this->core.checkThreshold();
+    return true;
 }
 
 /*####################################################
@@ -97,7 +98,7 @@ bool FmuContainer::getBoolean(const fmi2ValueReference *vr, size_t nvr, fmi2Bool
 
     // The only valid boolean is 2
     if(nvr == 1 && vr[0] == outOfSyncId){
-        value[0] = std::get<fmi2Boolean>(this->core.getData().at(outOfSyncId));
+        value[0] = this->core.getOutOfSync();
         return true;
     }
     else {
@@ -124,13 +125,14 @@ bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Inte
     }
     else {
         for(int i = 0; i < nvr; i++){
-            if(vr[i] == safeToleranceId || vr[i] == realTimeCheckIntervalID)
-            {
-                value[i] = std::get<fmi2Integer>(this->core.getData().at(vr[i]));
-            }
+
+            if(vr[i] == safeToleranceId)
+                value[i] = this->core.getSafeTolerance();
+            else if (vr[i] == realTimeCheckIntervalID)
+                value[i] = this->core.getRealTimeCheckInterval();
             else {
-                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getInteger received invalid arguments. Value references allowed: 1 to 2, actual: %i. ",
-                                 value[i]);
+                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 0 to 1, actual: %i. ",
+                                 vr[i]);
                 return false;
             }
         }
@@ -185,13 +187,13 @@ bool FmuContainer::setInteger(const fmi2ValueReference *vr, size_t nvr, const fm
         }
         else {
             for(int i = 0; i < nvr; i++){
-                if(vr[i] == safeToleranceId || vr[i] == realTimeCheckIntervalID)
-                {
-                    this->core.getData()[vr[i]] = ScalarVariableBaseValue(value[i]);
-                }
+                if(vr[i] == safeToleranceId)
+                    this->core.setSafeTolerance(value[i]);
+                else if (vr[i] == realTimeCheckIntervalID)
+                    this->core.setRealTimeCheckInterval(value[i]);
                 else {
-                    FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 1 to 2, actual: %i. ",
-                                     value[i]);
+                    FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 0 to 1, actual: %i. ",
+                                     vr[i]);
                     return false;
                 }
             }
@@ -231,6 +233,7 @@ bool FmuContainer::beginInitialize() {
         this->state = FMIState::error;
         return false;
     }
+    this->core.startWebserver();
     this->state = FMIState::initializing;
     return true;
 }
@@ -243,6 +246,7 @@ bool FmuContainer::endInitialize() {
         return false;
     }
     this->state = FMIState::initialized;
+    this->core.startRealTimeClock();
     return true;
 }
 

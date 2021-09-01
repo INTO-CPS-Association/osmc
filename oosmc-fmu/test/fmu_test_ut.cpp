@@ -31,6 +31,7 @@ void showStatus(const char *what, fmi2Status status) {
 namespace {
     TEST(FmuTest, BasicFlow
     ) {
+        bool oos = false;
         cout << " Simulation test for FMI " << fmi2GetVersion() << endl;
 
 
@@ -77,39 +78,42 @@ namespace {
             int safeToleranceMs = 100;
             int realTimeCheckIntervalMs = 50;
 
-            /*size_t nvr = 2;
-            const fmi2ValueReference *valRefs2 = new fmi2ValueReference[nvr]{0,1};
-            fmi2Integer *integerValues2 = new fmi2Integer[nvr]{safeToleranceMs, realTimeCheckIntervalMs};
-             fmi2SetInteger(c, valRefs2, 2, integerValues2);
-*/
-            //typedef fmi2Status fmi2SetIntegerTYPE(fmi2Component, const fmi2ValueReference[], size_t, const fmi2Integer[]);
             const size_t nvr = 2;
             unsigned int integerValrefs[nvr] = {0,1};
             int integerValues[nvr] = {safeToleranceMs, realTimeCheckIntervalMs};
-            fmi2SetInteger(c, integerValrefs, nvr, integerValues);
+            showStatus("fmi2SetInteger",fmi2SetInteger(c, integerValrefs, nvr, integerValues));
 
             showStatus("fmi2EnterInitializationMode", fmi2EnterInitializationMode(c));
             showStatus("fmi2ExitInitializationMode", fmi2ExitInitializationMode(c));
 
-//            fmi2Real currentCommunicationPoint = 0;
-//            fmi2Real communicationStepSize = 10;
-//            fmi2Boolean noSetFMUStatePriorToCurrentPoint = false;
-//
-//
-//            showStatus("fmi2DoStep", fmi2DoStep(c, currentCommunicationPoint, communicationStepSize,
-//                                                noSetFMUStatePriorToCurrentPoint));
-//
-//            showStatus("fmi2GetReal", fmi2GetReal(c, vr, nvr, value));
-//            for (int i = 0; i < nvr; i++) {
-//                cout << "Ref: '" << vr[i] << "' Value '" << value[i] << "'" << endl;
-//            }
+            fmi2Real currentCommunicationPoint = 0;
+            fmi2Real communicationStepSize = 1;
+
+            // as sleepTimeMilliseconds > (communicationStepSize+safeToleranceMs) this should be enough to cause an OOS.
+            int sleepTimeMilliseconds = 200;
+            this_thread::sleep_for(chrono::milliseconds(sleepTimeMilliseconds));
+
+            fmi2Boolean noSetFMUStatePriorToCurrentPoint = false;
+            showStatus("fmi2DoStep", fmi2DoStep(c, currentCommunicationPoint, communicationStepSize,
+                                                noSetFMUStatePriorToCurrentPoint));
 
 
-//        fmi2Terminate(fmi2Component c)
+            int nvrBoolean = 1;
+            int booleanValues[nvrBoolean];
+            integerValrefs[0]=outOfSyncId;
+            showStatus("fmi2GetBoolean", fmi2GetBoolean(c, integerValrefs, 1, booleanValues));
+            for (int i = 0; i < nvrBoolean; i++) {
+                cout << "Ref: '" << integerValrefs[i] << "' Value '" << booleanValues[i] << "'" << endl;
+            }
+            oos = booleanValues[0];
+
+
+        fmi2Terminate(c);
         } catch (const char *status) {
             cout << "Error " << status << endl;
         }
         fmi2FreeInstance(c);
+        ASSERT_TRUE(oos);
 
     }
 }
