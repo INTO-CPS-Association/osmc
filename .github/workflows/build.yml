@@ -17,7 +17,7 @@ jobs:
             submodules: true
 
           
-        - uses: lukka/get-cmake@latest
+        ##- uses: lukka/get-cmake@latest
         
         - name: Set up CLANG
           if: matrix.os == 'ubuntu-latest'
