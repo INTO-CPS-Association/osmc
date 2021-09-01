@@ -32,6 +32,8 @@ jobs:
 ##https://stackoverflow.com/a/64831469
           run: |
             echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
 
         - name: CMAKE
           run: |
