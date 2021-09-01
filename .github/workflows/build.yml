@@ -37,7 +37,7 @@ jobs:
 
         - name: CMAKE
           run: |
-            cmake .
+            cmake -G "MSYS Makefiles" .
 
         - name: run make NON WINDOWS
           ##if: matrix.os != 'windows-latest'
