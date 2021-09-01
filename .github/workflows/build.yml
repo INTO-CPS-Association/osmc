@@ -38,7 +38,7 @@ jobs:
             cmake .
 
         - name: run make NON WINDOWS
-          if: matrix.os != 'windows-latest'
+          ##if: matrix.os != 'windows-latest'
           run: |
             make
             make test
