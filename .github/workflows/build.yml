@@ -54,9 +54,9 @@ jobs:
             make test
 
         - name: make test on Windows
-            if: matrix.os == 'windows-latest'
-            run: |
-              bash -c "make test"
+          if: matrix.os == 'windows-latest'
+          run: |
+            bash -c "make test"
 
         - name: ls osmc 
           run: ls oosmc-fmu
