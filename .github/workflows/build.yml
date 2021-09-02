@@ -96,7 +96,7 @@ jobs:
 
       - name: Copy model description file
         run: |
-          cp osmc-fmu/modelDescription.xml osmcfmu/
+          cp oosmc-fmu/modelDescription.xml osmcfmu/
 
       - name: Upload FMU 
         uses: actions/upload-artifact@v2

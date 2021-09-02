@@ -4,8 +4,6 @@
 
 #include "FmuContainerCore.h"
 
-#include "FmuContainer.h"
-
 #include <stdio.h>  /* defines FILENAME_MAX */
 
 #ifdef WINDOWS
