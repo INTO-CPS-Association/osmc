@@ -48,36 +48,29 @@ jobs:
           run: |
             make
 
-        - name: make test on Unix
-  #        if: matrix.os != 'windows-latest'
+        - name: make test
           run: |
             make test
-
-        - name: make test on Windows
-          if: matrix.os == 'windows-latest'
-          run: |
-            oosmc-fmu/unit-test-osmc.exe
-            osmc-core/unit-test-osmc-core.exe
 
         - name: Upload artifact macos
           if: matrix.os == 'macos-latest'
           uses: actions/upload-artifact@v2
           with:
-            name: osmc.dylib
+            name: osmcfmu.dylib
             path: oosmc-fmu/osmc.dylib
 
         - name: Upload artifact linux 
           if: matrix.os == 'ubuntu-latest'
           uses: actions/upload-artifact@v2
           with:
-            name: libosmc.so
+            name: osmcfmu.so
             path: oosmc-fmu/osmc.so
 
         - name: Upload artifact windows
           if: matrix.os == 'windows-latest'
           uses: actions/upload-artifact@v2
           with:
-            name: osmc.dll
+            name: osmcfmu.dll
             path: oosmc-fmu/osmc.dll
   pack-fmu:
     runs-on: ubuntu-latest
@@ -86,23 +79,27 @@ jobs:
       - name: Download dll
         uses: actions/download-artifact@v2
         with:
-          name: osmc.dll
-          path: oosmcfmu/binaries/win64/
+          name: osmcfmu.dll
+          path: osmcfmu/binaries/win64/
 
       - name: Download shared library
         uses: actions/download-artifact@v2
         with:
-          name: libosmc.so
-          path: oosmcfmu/binaries/linux64/
+          name: osmcfmu.so
+          path: osmcfmu/binaries/linux64/
 
       - name: Download dylib
         uses: actions/download-artifact@v2
         with:
-          name: osmc.dylib
-          path: oosmcfmu/binaries/darwin64/
+          name: osmcfmu.dylib
+          path: osmcfmu/binaries/darwin64/
+
+      - name: Copy model description file
+        run: |
+          cp osmc-fmu/modelDescription.xml osmcfmu/
 
       - name: Upload FMU 
         uses: actions/upload-artifact@v2
         with:
-          name: oosmcfmu
-          path: oosmcfmu
+          name: osmcfmu
+          path: osmcfmu
