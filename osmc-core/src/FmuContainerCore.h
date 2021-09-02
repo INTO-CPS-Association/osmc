@@ -21,18 +21,7 @@
 
 #include "../../thirdparty/fmi/include/fmi2Functions.h"
 
-/*
- * These are the scalar variable IDs
- */
-const int safeToleranceId = 0;
-const int realTimeCheckIntervalID = 1;
-const int outOfSyncId = 2;
 
-
-
-typedef std::variant<int, double, std::string> ScalarVariableBaseValue;
-
-std::ostream &operator<<(std::ostream &os, const ScalarVariableBaseValue &c);
 class FmuContainerCore {
 
 public:
@@ -117,6 +106,8 @@ public:
     bool getOutOfSync();
 
 
+    void setWebserverHostname(fmi2String const string);
+
 private:
 
     /**
@@ -164,6 +155,7 @@ private:
      * Variable containing how often the checkThreshold shall be called by the timer
      */
     int realTimeCheckIntervalMs;
+    std::string webserverHostname = "127.0.0.1";
 };
 
 #endif //RABBITMQFMUPROJECT_FMUCONTAINERCORE_H

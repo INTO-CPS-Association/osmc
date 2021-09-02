@@ -23,8 +23,9 @@ namespace {
         Webserver webserver;
         ASSERT_FALSE(webserver.isServerRunning());
         int port = 1234;
+        std::string hostname = "127.0.0.1";
         webserver.RegisterOOSHandler(webserverOOSHandler);
-        webserver.startServer(port);
+        webserver.startServer(hostname, port);
 
         int sleepTimeMilliseconds = 10;
         this_thread::sleep_for(chrono::milliseconds(sleepTimeMilliseconds));

@@ -49,7 +49,7 @@ jobs:
             make
 
         - name: make test on Unix
-          if: matrix.os != 'windows-latest'
+  #        if: matrix.os != 'windows-latest'
           run: |
             make test
 

@@ -15,7 +15,7 @@ public:
     Webserver();
     void startServer();
     void RegisterOOSHandler(std::function<bool(void)> handler);
-    void startServer(int port);
+    void startServer(std::string hostname, int port);
     bool isServerRunning();
     void stop();
     ~Webserver();
@@ -24,6 +24,7 @@ public:
 private:
     httplib::Server svr;
     const int defaultPort = 8080;
+    const std::string defaultHostname = "127.0.0.1";
     std::function<bool(void)> externalHandler;
     std::thread _thd;
     std::atomic<bool> started = std::atomic<bool>(false);
@@ -31,6 +32,8 @@ private:
 
 
     std::function<void(const httplib::Request &, httplib::Response &)> oosGetHandler;
+    std::string hostname;
+    int port;
 };
 
 

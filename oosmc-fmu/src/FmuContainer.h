@@ -21,30 +21,16 @@ using namespace std;
 
 const int safeToleranceInitial = 10000;
 const int realTimeCheckIntervalInitial = 500;
-
-#define mergeFieldMap(mapName, other) \
-    for(auto& pair: other.mapName) \
-    { \
-        this->mapName[pair.first]=pair.second; \
-    }
+/*
+ * These are the scalar variable IDs
+ */
+const int safeToleranceId = 0;
+const int realTimeCheckIntervalID = 1;
+const int outOfSyncId = 2;
+const int webServerHostnameId = 3;
+const int webServerPortId = 4;
 
 using namespace std;
-
-struct DataPoint {
-    std::map<unsigned int, int> integerValues;
-    std::map<unsigned int, double> doubleValues;
-    std::map<unsigned int, bool> booleanValues;
-    std::map<unsigned int, std::string> stringValues;
-
-
-    DataPoint merge(DataPoint other) {
-        mergeFieldMap(integerValues, other)
-        mergeFieldMap(doubleValues, other)
-        mergeFieldMap(booleanValues, other)
-        mergeFieldMap(stringValues, other)
-        return *this;
-    }
-};
 
 enum class FMIState {instantiated, initializing, initialized, error, terminated};
 
@@ -99,13 +85,10 @@ public:
     bool endInitialize();
 
 private:
-    DataPoint currentData;
     FmuContainerCore core;
     FMIState state = FMIState::instantiated;
 
     const bool loggingOn;
-
-    unsigned long precision;
 
 
     void destroy();

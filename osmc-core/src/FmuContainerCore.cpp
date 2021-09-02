@@ -41,7 +41,7 @@ bool FmuContainerCore::startWebserver(){
             this->webserverHandler = [this](){return this->outOfSync.load();};
         }
         this->webserver.RegisterOOSHandler(this->webserverHandler);
-        this->webserver.startServer(this->port);
+        this->webserver.startServer(this->webserverHostname, this->port);
         this->webserverStarted = true;
         return true;
     }
@@ -158,6 +158,11 @@ int FmuContainerCore::getRealTimeCheckInterval() {
 
 bool FmuContainerCore::getOutOfSync() {
     return this->outOfSync.load();
+}
+
+void FmuContainerCore::setWebserverHostname(fmi2String webServerHostname) {
+    this->webserverHostname = webServerHostname;
+
 }
 
 std::ostream &operator<<(std::ostream &os, FmuContainerCore &c) {

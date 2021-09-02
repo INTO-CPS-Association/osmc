@@ -4,6 +4,8 @@
 
 #include "FmuContainerCore.h"
 
+#include "FmuContainer.h"
+
 #include <stdio.h>  /* defines FILENAME_MAX */
 
 #ifdef WINDOWS
@@ -100,7 +102,7 @@ namespace {
 
             int nvrBoolean = 1;
             int booleanValues[nvrBoolean];
-            integerValrefs[0]=outOfSyncId;
+            integerValrefs[0]=2;
             showStatus("fmi2GetBoolean", fmi2GetBoolean(c, integerValrefs, 1, booleanValues));
             for (int i = 0; i < nvrBoolean; i++) {
                 cout << "Ref: '" << integerValrefs[i] << "' Value '" << booleanValues[i] << "'" << endl;

@@ -13,10 +13,13 @@ void Webserver::RegisterOOSHandler(std::function<bool(void)> handler) {
 
 void Webserver::startServer() {
 
-    this->startServer(this->defaultPort);
+    this->startServer(this->defaultHostname, this->defaultPort);
 }
 
-void Webserver::startServer(int port) {
+void Webserver::startServer(std::string hostname, int port) {
+    this->hostname = hostname;
+    this->port = port;
+
     std::function<void(const httplib::Request &, httplib::Response &res)> handler;
     if(this->externalHandler)
         handler = [handlerLambda = this->externalHandler](const httplib::Request &, httplib::Response &res) {
@@ -27,9 +30,9 @@ void Webserver::startServer(int port) {
 
     this->oosGetHandler = handler;
 
-    this -> _thd = std::thread([this, port]()
+    this -> _thd = std::thread([this, hostname, port]()
                        {
-                            svr.listen("127.0.0.1", port);
+                            svr.listen(hostname.c_str(), port);
                        });
 }
 

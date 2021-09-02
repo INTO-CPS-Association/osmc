@@ -47,10 +47,8 @@ add_executable(unit-test-${PROJECT_NAME} ${CPP_TEST_FILES})
 target_include_directories(unit-test-${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../httprequest/include)
 target_link_libraries(unit-test-${PROJECT_NAME} gtest_main osmc-core)
 
-if (WIN32)
-    add_test(unit-test-${PROJECT_NAME} wine ${PROJECT_NAME} --gtest_output=xml:gtestresults.xml)
-else ()
-    add_test(NAME unit-test-${PROJECT_NAME} COMMAND unit-test-${PROJECT_NAME}  --gtest_output=xml:gtestresults.xml)
-endif ()
+
+add_test(NAME unit-test-${PROJECT_NAME} COMMAND unit-test-${PROJECT_NAME}  --gtest_output=xml:gtestresults.xml)
+
 
 

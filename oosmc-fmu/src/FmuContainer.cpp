@@ -27,7 +27,7 @@
 
 
 FmuContainer::FmuContainer(const fmi2CallbackFunctions *mFunctions, bool logginOn, const char *mName)
-        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), precision(10), core(mFunctions, mName, realTimeCheckIntervalInitial, safeToleranceInitial){
+        : m_functions(mFunctions), m_name(mName), loggingOn(logginOn), core(mFunctions, mName, realTimeCheckIntervalInitial, safeToleranceInitial){
 }
 
 FmuContainer::~FmuContainer() {
@@ -176,12 +176,12 @@ bool FmuContainer::setBoolean(const fmi2ValueReference *vr, size_t nvr, const fm
 }
 
 bool FmuContainer::setInteger(const fmi2ValueReference *vr, size_t nvr, const fmi2Integer *value) {
-    // Only allow sets in the instantiated mode.
+    // Only allow sets in the instantiated mode as they are all parameters.
     if(this->state == FMIState::instantiated)
     {
-        if (nvr > 2 || nvr == 0)
+        if (nvr > 3 || nvr == 0)
         {
-            FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. nvr expected: 1 to 2, actual: %zu. ",
+            FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. nvr expected:1 to 3, actual: %zu. ",
                              nvr);
             return false;
         }
@@ -191,19 +191,21 @@ bool FmuContainer::setInteger(const fmi2ValueReference *vr, size_t nvr, const fm
                     this->core.setSafeTolerance(value[i]);
                 else if (vr[i] == realTimeCheckIntervalID)
                     this->core.setRealTimeCheckInterval(value[i]);
+                else if (vr[i] == webServerPortId)
+                    this->core.setPort(value[i]);
                 else {
                     FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 0 to 1, actual: %i. ",
                                      vr[i]);
                     return false;
                 }
             }
-            return true;
         }
     }
     else{
-        FmuContainer_LOG(fmi2OK, "logError", "setInteger is invalid in the instantiated state.","");
+        FmuContainer_LOG(fmi2OK, "logError", "setInteger is invalid in the current state.","");
         return false;
     }
+    return true;
 }
 
 bool FmuContainer::setReal(const fmi2ValueReference *vr, size_t nvr, const fmi2Real *value) {
@@ -217,12 +219,29 @@ bool FmuContainer::setReal(const fmi2ValueReference *vr, size_t nvr, const fmi2R
 }
 
 bool FmuContainer::setString(const fmi2ValueReference *vr, size_t nvr, const fmi2String *value) {
-    if (nvr > 0){
-        FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setString is invalid. There are no strings to set.","");
-        return false;
+    // Only allow sets in the instantiated mode as they are all parameters.
+    if(this->state == FMIState::instantiated) {
+        if (nvr > 1 || nvr == 0) {
+            FmuContainer_LOG(fmi2Fatal, "logStatusFatal",
+                             "setString received invalid arguments. nvr expected: 1, actual: %zu. ",
+                             nvr);
+            return false;
+        } else if (nvr == 1) {
+
+            if (vr[0] == webServerHostnameId) {
+                this->core.setWebserverHostname(value[0]);
+            } else {
+                FmuContainer_LOG(fmi2Fatal, "logStatusFatal",
+                                 "setString received invalid arguments. Value references allowed: %i, actual: %i. ",
+                                 webServerHostnameId, vr[0]);
+                return false;
+            }
+        }
+        return true;
     }
     else {
-        return true;
+        FmuContainer_LOG(fmi2OK, "logError", "setString is invalid in the current state.","");
+        return false;
     }
 }
 
