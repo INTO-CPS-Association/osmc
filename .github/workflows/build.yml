@@ -72,6 +72,14 @@ jobs:
           with:
             name: osmcfmu.dll
             path: oosmc-fmu/osmc.dll
+
+        - name: Upload modelDescription.xml
+          if: matrix.os == 'ubuntu-latest'
+          uses: actions/upload-artifact@v2
+          with:
+            name: modelDescription.xml
+            path: oosmc-fmu/modelDescription.xml
+
   pack-fmu:
     runs-on: ubuntu-latest
     needs: build
@@ -94,9 +102,11 @@ jobs:
           name: osmcfmu.dylib
           path: osmcfmu/binaries/darwin64/
 
-      - name: Copy model description file
-        run: |
-          cp oosmc-fmu/modelDescription.xml osmcfmu/
+      - name: Download model description file
+        uses: actions/download-artifact@v2
+        with:
+          name: modelDescription.xml
+          path: osmcfmu/
 
       - name: Upload FMU 
         uses: actions/upload-artifact@v2
