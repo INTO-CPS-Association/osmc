@@ -6,7 +6,7 @@ include(ExternalProject)
 
 FetchContent_Declare(httprequest
         GIT_REPOSITORY https://github.com/elnormous/HTTPRequest.git
-        GIT_TAG 8815d109963f08485ecbff3e6e2449116bba31ae
+        GIT_TAG 4c3bbe94b60d67b58716dcd1696a34520e3bc073
         GIT_SHALLOW ON
         SOURCE_DIR "${CMAKE_BINARY_DIR}/httprequest"
         )
