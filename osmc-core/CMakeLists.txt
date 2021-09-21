@@ -7,7 +7,7 @@ include(ExternalProject)
 FetchContent_Declare(httprequest
         GIT_REPOSITORY https://github.com/elnormous/HTTPRequest.git
         GIT_TAG 4c3bbe94b60d67b58716dcd1696a34520e3bc073
-        GIT_SHALLOW ON
+#        GIT_SHALLOW ON #GIt shallow does not work with commit hash. See https://cmake.org/cmake/help/git-stage/module/ExternalProject.html under GIT_TAG <tag>
         SOURCE_DIR "${CMAKE_BINARY_DIR}/httprequest"
         )
 
