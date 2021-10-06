@@ -76,3 +76,8 @@ intocpsfmi-src
 httprequest
 
 **/gtestresults.xml
+
+### dump files
+dump/
+target/
+*.csv

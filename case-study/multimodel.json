@@ -1,0 +1,19 @@
+{
+    "fmus": {
+        "{rbmq}": "fmus/rabbitmq_cs_1.fmu",
+        "{osmc}": "fmus/osmc.fmu"
+    },
+    "connections": {
+        "{osmc}.osmcInstance.outofsync": [
+            "{rbmq}.rbmqInstance.outofsync"
+        ]
+    },
+    "parameters": {
+        "{rbmq}.rbmqInstance.config.maxage": 2000,
+        "{rbmq}.rbmqInstance.config.hostname": "localhost",
+        "{rbmq}.rbmqInstance.config.precision": 10,
+        "{sMonitor}.sMonitorInstance.safety_dist": 10
+    },
+    "algorithm":{"type":"fixed-step","size":0.1}
+
+}     
