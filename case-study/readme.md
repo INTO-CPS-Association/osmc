@@ -8,6 +8,7 @@ cd server
 docker compose up -d
 python3 playback_gazebo_data-test.py
 ```
+The script will ask for the operation mode, possible options are: normal, degrade, drop.
 
 The script reads data from ```gazebo_playback_data-noround.csv```.
 Thereafter in a separate terminal run in the case-study folder:
