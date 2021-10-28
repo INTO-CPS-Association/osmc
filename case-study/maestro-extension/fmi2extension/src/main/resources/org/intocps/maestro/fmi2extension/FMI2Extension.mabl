@@ -1,0 +1,5 @@
+module FMI2Extension
+import FMI2Component;
+{
+    real getMaxStepSize(FMI2Component component);
+}
