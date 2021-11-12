@@ -44,7 +44,8 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-
+# logs
+*.log
 bin
 build
 thirdparty/external
