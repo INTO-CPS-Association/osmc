@@ -6,22 +6,21 @@ import org.apache.commons.io.IOUtils;
 import org.intocps.maestro.Mabl;
 import org.intocps.maestro.ast.analysis.AnalysisException;
 import org.intocps.maestro.ast.display.PrettyPrinter;
+import org.intocps.maestro.ast.node.AIdentifierExp;
 import org.intocps.maestro.ast.node.ASimulationSpecificationCompilationUnit;
 import org.intocps.maestro.ast.node.PStm;
 import org.intocps.maestro.core.Framework;
 import org.intocps.maestro.core.messages.ErrorReporter;
 import org.intocps.maestro.core.messages.IErrorReporter;
 import org.intocps.maestro.framework.fmi2.api.Fmi2Builder;
-import org.intocps.maestro.framework.fmi2.api.mabl.DataWriter;
-import org.intocps.maestro.framework.fmi2.api.mabl.LoggerFmi2Api;
-import org.intocps.maestro.framework.fmi2.api.mabl.MablApiBuilder;
-import org.intocps.maestro.framework.fmi2.api.mabl.PortFmi2Api;
+import org.intocps.maestro.framework.fmi2.api.mabl.*;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.DynamicActiveBuilderScope;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.IfMaBlScope;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.WhileMaBLScope;
 import org.intocps.maestro.framework.fmi2.api.mabl.variables.*;
 import org.intocps.maestro.interpreter.DefaultExternalValueFactory;
 import org.intocps.maestro.interpreter.MableInterpreter;
+import org.junit.Assert;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
@@ -60,7 +59,6 @@ public class Test {
 
         FmuVariableFmi2Api osmcFMU = scope.createFMU("osmc", "FMI2", URI.create(osmcFMUFile.getAbsolutePath()).toString());
         ComponentVariableFmi2Api osmcInstance = osmcFMU.instantiate("osmcInstance");
-
         osmcInstance.setupExperiment(startTime, endTime, null);
         osmcInstance.enterInitializationMode();
         osmcInstance.getAndShare();
