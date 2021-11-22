@@ -38,7 +38,7 @@ public class FmiExtensionRuntimeModule implements IValueLifecycleHandler {
 
                 List<Value> args = fargs.stream().map(Value::deref).collect(Collectors.toList());
 
-                checkArgLength(args, 3);
+                checkArgLength(args, 1);
 
                 Value compVal = args.get(0);
 

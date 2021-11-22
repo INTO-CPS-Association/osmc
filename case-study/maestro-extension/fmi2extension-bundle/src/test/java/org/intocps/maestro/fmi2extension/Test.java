@@ -17,6 +17,7 @@ import org.intocps.maestro.framework.fmi2.api.mabl.*;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.DynamicActiveBuilderScope;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.IfMaBlScope;
 import org.intocps.maestro.framework.fmi2.api.mabl.scoping.WhileMaBLScope;
+import org.intocps.maestro.framework.fmi2.api.mabl.values.IntExpressionValue;
 import org.intocps.maestro.framework.fmi2.api.mabl.variables.*;
 import org.intocps.maestro.interpreter.DefaultExternalValueFactory;
 import org.intocps.maestro.interpreter.MableInterpreter;
@@ -36,6 +37,7 @@ import java.util.*;
 
 public class Test {
     double MAXIMUM_STEP_SIZE = 2.0;
+    double MINIMUM_STEP_SIZE = 0.1;
     public static String outputs_csv = "outputs.csv";
     @org.junit.Test
     public void initialTest() throws Exception {
@@ -43,8 +45,9 @@ public class Test {
         DynamicActiveBuilderScope scope = builder.getDynamicScope();
         DoubleVariableFmi2Api startTime = scope.store("startTime", 0.0);
         DoubleVariableFmi2Api endTime = scope.store("endTime", 10.0);
+        DoubleVariableFmi2Api step_size_minimum = scope.store("step_size_minimum", MINIMUM_STEP_SIZE);
         DoubleVariableFmi2Api step_size_maximum = scope.store("step_size_maximum", MAXIMUM_STEP_SIZE);
-        DoubleVariableFmi2Api step_size_default = scope.store("step_size_default", 0.01);
+        DoubleVariableFmi2Api step_size_default = scope.store("step_size_default", 0.1);
         BooleanVariableFmi2Api mitigate = scope.store("mitigate", false);
         DoubleVariableFmi2Api currentCommunicationPoint = scope.store("currentCommunicationPoint", 0.0);
         DoubleVariableFmi2Api current_step_size = scope.store("current_step_size", 0.0);
@@ -76,6 +79,8 @@ public class Test {
         osmcOutOfSyncPort.linkTo(rbmqFmuOutOfSyncPort);
 
         rbmqInstance.setupExperiment(startTime, endTime, null);
+        PortFmi2Api maxage = rbmqInstance.getPort("config.maxage");
+        rbmqInstance.set(maxage, new IntExpressionValue(150));
         rbmqInstance.enterInitializationMode();
         rbmqInstance.setLinked();
         rbmqInstance.exitInitializationMode();
@@ -97,10 +102,15 @@ public class Test {
 
         WhileMaBLScope simulationLoop = scope.enterWhile(currentCommunicationPoint.toMath().addition(current_step_size).lessEqualTo(endTime));
         {
+            ConsolePrinter consolePrinter = builder.getConsolePrinter();
+            consolePrinter.print("time %f", currentCommunicationPoint);
             // Step the FMUs
-            Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step = osmcInstance.step(currentCommunicationPoint, current_step_size);
-            currentCommunicationPoint.setValue(currentCommunicationPoint.toMath().addition(current_step_size));
+            builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "current step size %f", current_step_size);
 
+            Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step = osmcInstance.step(currentCommunicationPoint, current_step_size);
+            Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step2 = rbmqInstance.step(currentCommunicationPoint, current_step_size);
+
+            currentCommunicationPoint.setValue(currentCommunicationPoint.toMath().addition(current_step_size));
             // Get state of all FMUs
             rbmqInstance.getAndShare();
             osmcInstance.getAndShare();
@@ -118,15 +128,27 @@ public class Test {
                 rbmqMaxStepSizeVariable.setValue(temprbmqMaxStepSizeVariable);
                 IfMaBlScope ifrbmqLessThanOsmc = scope.enterIf(rbmqMaxStepSizeVariable.toMath().lessThan(osmcMaxStepSizeVariable));
                 ifrbmqLessThanOsmc.enterThen();
+                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "rabbitmq maxstep %f", rbmqMaxStepSizeVariable);
                 current_step_size.setValue(rbmqMaxStepSizeVariable);
                 scope.leave();
                 ifrbmqLessThanOsmc.enterElse();
+                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "osmc maxstep %f", osmcMaxStepSizeVariable);
                 current_step_size.setValue(osmcMaxStepSizeVariable);
                 scope.leave();
 
-                scope.enterIf(current_step_size.toMath().greaterThan(step_size_maximum)).enterThen();
+                IfMaBlScope ifMaBlScope = scope.enterIf(current_step_size.toMath().greaterThan(step_size_maximum));
+                ifMaBlScope.enterThen();
+
+                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "setting maximum %f", step_size_maximum);
                 current_step_size.setValue(step_size_maximum);
                 scope.leave();
+                ifMaBlScope.enterElse();
+                scope.enterIf(current_step_size.toMath().lessThan(step_size_minimum)).enterThen();
+                current_step_size.setValue(step_size_minimum);
+                scope.leave();
+
+
+
             };
             Runnable useDefault = () -> {
                 current_step_size.setValue(step_size_default);
@@ -149,6 +171,7 @@ public class Test {
         osmcInstance.terminate();
         rbmqInstance.terminate();
 
+        dataWriterInstance.close();
         ASimulationSpecificationCompilationUnit spec = builder.build();
         System.out.println(PrettyPrinter.print(spec));
 

@@ -55,6 +55,7 @@ def publish(delay_mode, start_delay, end_delay, time_delay):
                 period = end_delay-start_delay
                 if i >= start_delay and i < end_delay:
                     msg_array = msg_array + [msg]
+                    time.sleep(1)
                     print(" [DROP] In drop mode with delay %f\n Messages will be sent in a burst after the delay period" % period)
                 elif i == end_delay:
                     print(" [DROP END] After drop mode with delay %f\n Sending as fast as possible" % period)
@@ -69,7 +70,7 @@ def publish(delay_mode, start_delay, end_delay, time_delay):
                     channel.basic_publish(exchange='fmi_digital_twin',
                                 routing_key='default',
                                 body=json.dumps(msg))
-                time.sleep(time_sleep)
+                    time.sleep(time_sleep)
             else:
                 print(" [NORMAL] Sent %s" % json.dumps(msg))
                 channel.basic_publish(exchange='fmi_digital_twin',
@@ -88,8 +89,8 @@ if __name__ == '__main__':
     print("Running in %s mode" % mode)
     delay_mode = mode # options normal/degrade/drop
     start_delay = 5 # delay starts at this step
-    end_delay = 15 # delay ends at this step
-    time_delay = 0.5 # delay between each publieshed message, bigger than the timestep, used as sleep between msg published in the degraded mode
+    end_delay = 8 # delay ends at this step
+    time_delay = 2 # delay between each publieshed message, bigger than the timestep, used as sleep between msg published in the degraded mode
 
     channel.basic_consume(
         queue=queue_name, on_message_callback=lambda ch, method, property, body: callback(ch, method, property, body, delay_mode, start_delay, end_delay, time_delay), auto_ack=True)
