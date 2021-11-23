@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Test {
-    double MAXIMUM_STEP_SIZE = 2.0;
+    double MAXIMUM_STEP_SIZE = 6.0;
     double MINIMUM_STEP_SIZE = 0.1;
     public static String outputs_csv = "outputs.csv";
     @org.junit.Test
@@ -86,12 +86,13 @@ public class Test {
         rbmqInstance.exitInitializationMode();
         // RBMQInstance ready
 
-
-
-
         DataWriter dataWriter = builder.getDataWriter();
         DataWriter.DataWriterInstance dataWriterInstance = dataWriter.createDataWriterInstance();
-        dataWriterInstance.initialize(osmcOutOfSyncPort);
+
+        PortFmi2Api rbmqFmuSeqnoPort = rbmqInstance.getPort("seqno");
+        rbmqInstance.getAndShare(rbmqFmuSeqnoPort);
+        dataWriterInstance.initialize(osmcOutOfSyncPort, rbmqFmuSeqnoPort);
+
         dataWriterInstance.log(currentCommunicationPoint);
 
         DoubleVariableFmi2Api osmcMaxStepSizeVariable = scope.store("osmcMaxStepSize", 0.0);
