@@ -80,7 +80,7 @@ public class Test {
 
         rbmqInstance.setupExperiment(startTime, endTime, null);
         PortFmi2Api maxage = rbmqInstance.getPort("config.maxage");
-        rbmqInstance.set(maxage, new IntExpressionValue(150));
+        rbmqInstance.set(maxage, new IntExpressionValue(200));
         rbmqInstance.enterInitializationMode();
         rbmqInstance.setLinked();
         rbmqInstance.exitInitializationMode();
