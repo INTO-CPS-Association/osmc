@@ -80,6 +80,8 @@ double FmuContainerCore::getDifferenceSimulationTimeMinusRealTimeMs(){
     // This the current simulation Time
     double currentSimulationTimeMs = this->getCurrentSimulationTimeMs();
     double tdiff = currentSimulationTimeMs - realTimeDifferenceMs.count();
+
+    return tdiff;
 }
 
 void FmuContainerCore::checkThreshold() {
