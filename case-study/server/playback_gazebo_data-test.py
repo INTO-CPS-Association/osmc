@@ -4,6 +4,9 @@ import json
 import datetime
 import time
 import csv
+import argparse
+import copy
+
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 print("Declaring exchange")
@@ -36,7 +39,7 @@ def publish(delay_mode, start_delay, end_delay, time_delay):
             ypos = float(row['ypos'])
             msg['xpos']=xpos
             msg['ypos']=ypos           
-            #msg['seqno']=i
+            msg['seqno']=i
             timet = datetime.datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f%z")
             msg['time']= timet.isoformat()
 
@@ -54,16 +57,20 @@ def publish(delay_mode, start_delay, end_delay, time_delay):
             elif delay_mode == "drop":
                 period = end_delay-start_delay
                 if i >= start_delay and i < end_delay:
-                    msg_array = msg_array + [msg]
+                    msg_array.extend([copy.deepcopy(msg)])
                     time.sleep(1)
                     print(" [DROP] In drop mode with delay %f\n Messages will be sent in a burst after the delay period" % period)
                 elif i == end_delay:
+                    msg_array.extend([copy.deepcopy(msg)])
                     print(" [DROP END] After drop mode with delay %f\n Sending as fast as possible" % period)
                     #print(" [DROP END] Messages %s" % str(msg_array))
-                    for x in msg_array: 
+                    for x in msg_array:
+                        print(" [DROP END] %s")
                         channel.basic_publish(exchange='fmi_digital_twin',
                             routing_key='default',
                             body=json.dumps(x))
+
+                        print(" [DROP END] %s", json.dumps(x))
                     msg_array = []
                 else:
                     print(" [OK] Sent %s" % json.dumps(msg))
@@ -85,11 +92,18 @@ def callback(ch, method, properties, body, delay_mode, start_delay, end_delay, t
       publish(delay_mode, start_delay, end_delay, time_delay)
 
 if __name__ == '__main__':
-    mode = input("Provide mode of operation: normal/degrade/drop: ")
-    print("Running in %s mode" % mode)
-    delay_mode = mode # options normal/degrade/drop
+    options = argparse.ArgumentParser(prog="playback_gazebo_data-test", epilog="""
+
+    python playback_gazebo_data-test.py -mode [normal | degrade | drop]
+
+    """)
+    options.add_argument("-mode", dest="mode", type=str, required=False, default="normal", help='Select mode for publishing to the rmqfmu')
+    args = options.parse_args()
+
+    delay_mode = args.mode # options normal/degrade/drop
+    print("Running in %s mode" % delay_mode)
     start_delay = 5 # delay starts at this step
-    end_delay = 8 # delay ends at this step
+    end_delay = 15 # delay ends at this step
     time_delay = 2 # delay between each publieshed message, bigger than the timestep, used as sleep between msg published in the degraded mode
 
     channel.basic_consume(
