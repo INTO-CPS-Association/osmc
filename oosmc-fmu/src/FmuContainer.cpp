@@ -90,7 +90,7 @@ bool FmuContainer::fmi2GetMaxStepsize(fmi2Real *size) {
     // What is the current real time?
     double simulationTimeMinusRealTimeMs = this->core.getDifferenceSimulationTimeMinusRealTimeMs();
     if (simulationTimeMinusRealTimeMs < 0.0){
-        *size = std::abs(simulationTimeMinusRealTimeMs);
+        *size = std::abs(simulationTimeMinusRealTimeMs)/1000;
     }
     else {
         // simulation time is ahead. Expect orchestration algortihm to correct 0.0 step size
