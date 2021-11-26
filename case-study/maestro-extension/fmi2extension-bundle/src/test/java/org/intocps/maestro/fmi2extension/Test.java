@@ -122,20 +122,29 @@ public class Test {
 
             // Calculate the step size
             Runnable getMaxStep = () -> {
+                // Get OSMC Max Step Size
                 var tempOsmcMaxStepSize = fmi2ExtensionApi.getMaxStepSize(osmcInstance);
                 osmcMaxStepSizeVariable.setValue(tempOsmcMaxStepSize);
+                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "osmc maxstep %f", osmcMaxStepSizeVariable);
+
+                // Get RabbitMQ max step size
                 var temprbmqMaxStepSizeVariable = fmi2ExtensionApi.getMaxStepSize(rbmqInstance);
                 rbmqMaxStepSizeVariable.setValue(temprbmqMaxStepSizeVariable);
+                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "rabbitmq maxstep %f", rbmqMaxStepSizeVariable);
+
+                // rbmq Max Step < osmc Max Step -> step = rbmq Max Step
+                // else -> step = osmc Max Step
                 IfMaBlScope ifrbmqLessThanOsmc = scope.enterIf(rbmqMaxStepSizeVariable.toMath().lessThan(osmcMaxStepSizeVariable));
                 ifrbmqLessThanOsmc.enterThen();
-                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "rabbitmq maxstep %f", rbmqMaxStepSizeVariable);
+
                 current_step_size.setValue(rbmqMaxStepSizeVariable);
                 scope.leave();
                 ifrbmqLessThanOsmc.enterElse();
-                builder.getLogger().log(LoggerFmi2Api.Level.ERROR, "osmc maxstep %f", osmcMaxStepSizeVariable);
                 current_step_size.setValue(osmcMaxStepSizeVariable);
                 scope.leave();
 
+                // Step > Max Step -> step = Max Step
+                // else -> Step < min Step -> step = min Step
                 IfMaBlScope ifMaBlScope = scope.enterIf(current_step_size.toMath().greaterThan(step_size_maximum));
                 ifMaBlScope.enterThen();
 

@@ -83,3 +83,5 @@ dump/
 target/
 *.csv
 maestro-2.1.7-jar-with-dependencies.jar
+case-study/maestro-extension/fmi2extension/.settings
+case-study/maestro-extension/fmi2extension-bundle/.settings
