@@ -86,8 +86,20 @@ bool FmuContainer::step(fmi2Real currentCommunicationPoint, fmi2Real communicati
  ###################################################*/
 
 bool FmuContainer::fmi2GetMaxStepsize(fmi2Real *size) {
+    double currentSimulationTimeMS = this->core.getCurrentSimulationTimeMs();
+    // What is the current real time?
+    double simulationTimeMinusRealTimeMs = this->core.getDifferenceSimulationTimeMinusRealTimeMs();
+    if (simulationTimeMinusRealTimeMs < 0.0){
+        *size = std::abs(simulationTimeMinusRealTimeMs);
+    }
+    else {
+        // simulation time is ahead. Expect orchestration algortihm to correct 0.0 step size
+        *size = 0.0;
+    }
 
-    return false;
+    FmuContainer_LOG(fmi2OK, "logStatusOk", "fmi2GetMaxStepsize returning size: %f",
+                     *size);
+    return true;
 }
 
 /*####################################################

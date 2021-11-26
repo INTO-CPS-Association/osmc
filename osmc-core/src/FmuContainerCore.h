@@ -108,6 +108,15 @@ public:
 
     void setWebserverHostname(fmi2String const string);
 
+    /**
+     * Function to retrieve the current simulation time in milliseconds
+     * @return
+     */
+    double getCurrentSimulationTimeMs();
+
+
+    double getDifferenceSimulationTimeMinusRealTimeMs();
+
 private:
 
     /**
@@ -132,11 +141,6 @@ private:
      */
     std::pair<StateBinary, std::chrono::time_point<std::chrono::system_clock>> real_time_clock_started;
 
-    /**
-     * Function to retrieve the current simulation time in milliseconds
-     * @return
-     */
-    double getCurrentSimulationTimeMs();
     std::atomic<double> currentSimulationTime = std::atomic<double>(0.0);
     std::function<void(double, int)> outOfSyncCallbackFunction;
     std::function<void()> inSyncCallbackFunction;

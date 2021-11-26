@@ -74,12 +74,16 @@ std::string FmuContainerCore::printStateBinary(FmuContainerCore::StateBinary sta
     }
 }
 
-void FmuContainerCore::checkThreshold() {
+double FmuContainerCore::getDifferenceSimulationTimeMinusRealTimeMs(){
     // Get the current time
     auto realTimeDifferenceMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - this->real_time_clock_started.second);
     // This the current simulation Time
     double currentSimulationTimeMs = this->getCurrentSimulationTimeMs();
-    double tdiff = std::abs(currentSimulationTimeMs - realTimeDifferenceMs.count());
+    double tdiff = currentSimulationTimeMs - realTimeDifferenceMs.count();
+}
+
+void FmuContainerCore::checkThreshold() {
+    double tdiff = std::abs(getDifferenceSimulationTimeMinusRealTimeMs());
     if(tdiff > this->getSafeTolerance())
     {
         // DT AND PT ARE OUT OF SYNC!
