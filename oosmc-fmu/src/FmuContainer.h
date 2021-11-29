@@ -19,8 +19,8 @@ using namespace std;
 #include <map>
 #include <ctime>
 
-const int safeToleranceInitial = 10000;
-const int realTimeCheckIntervalInitial = 500;
+const int safeToleranceInitial = 500;
+const int realTimeCheckIntervalInitial = 200;
 /*
  * These are the scalar variable IDs
  */
