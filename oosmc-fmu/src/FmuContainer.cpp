@@ -76,7 +76,8 @@ bool FmuContainer::step(fmi2Real currentCommunicationPoint, fmi2Real communicati
         this->state = FMIState::error;
         return false;
     }
-    this->core.setCurrentSimulationTime(currentCommunicationPoint + communicationStepSize);
+    // Multiple by 1000 due to seconds -> milliseconds
+    this->core.setCurrentSimulationTime((currentCommunicationPoint + communicationStepSize)*1000);
     this->core.checkThreshold();
     return true;
 }
@@ -90,6 +91,8 @@ bool FmuContainer::fmi2GetMaxStepsize(fmi2Real *size) {
     // What is the current real time?
     double simulationTimeMinusRealTimeMs = this->core.getDifferenceSimulationTimeMinusRealTimeMs();
     if (simulationTimeMinusRealTimeMs < 0.0){
+        // The simulation time is behind the real time.
+        // Therefore make it absolute value and divide by 1000 to go from milliseconds to seconds.
         *size = std::abs(simulationTimeMinusRealTimeMs)/1000;
     }
     else {
