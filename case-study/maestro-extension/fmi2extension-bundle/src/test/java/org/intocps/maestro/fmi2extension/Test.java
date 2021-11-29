@@ -62,6 +62,8 @@ public class Test {
 
         FmuVariableFmi2Api osmcFMU = scope.createFMU("osmc", "FMI2", URI.create(osmcFMUFile.getAbsolutePath()).toString());
         ComponentVariableFmi2Api osmcInstance = osmcFMU.instantiate("osmcInstance");
+        PortFmi2Api safetolerance = osmcInstance.getPort("safetolerance");
+        osmcInstance.set(safetolerance, new IntExpressionValue(500));//ms
         osmcInstance.setupExperiment(startTime, endTime, null);
         osmcInstance.enterInitializationMode();
         osmcInstance.getAndShare();

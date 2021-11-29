@@ -106,7 +106,7 @@ if __name__ == '__main__':
     delay_mode = args.mode # options normal/degrade/drop
     print("Running in %s mode" % delay_mode)
     start_delay = 2 # delay starts at this step
-    end_delay = 8 # delay ends at this step
+    end_delay = 6 # delay ends at this step
     time_delay = 2 # delay between each publieshed message, bigger than the timestep, used as sleep between msg published in the degraded mode
 
     channel.basic_consume(
