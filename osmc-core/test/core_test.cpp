@@ -56,7 +56,18 @@ namespace {
         this_thread::sleep_for(chrono::milliseconds(sleepTimeMilliseconds));
 
         double simulationAheadMs = core.getDifferenceSimulationTimeMinusRealTimeMs();
-
+//        std::cout << simulationAheadMs << std::endl;
+        // This should be negative, as the simulation is behind the real time
         ASSERT_TRUE(simulationAheadMs < 0.0);
+
+        //Convert simulationAheadMs to simulationBehind, as it is negative. And turn it into a positive value to catch up.
+        double simulationBehindMs = std::abs(simulationAheadMs);
+        core.setCurrentSimulationTime(simulationBehindMs);
+        simulationAheadMs = core.getDifferenceSimulationTimeMinusRealTimeMs();
+//        std::cout << simulationAheadMs << std::endl;
+        core.checkThreshold();
+
+        //Out of sync should be false
+        ASSERT_TRUE(!core.getOutOfSync());
     }
 }
