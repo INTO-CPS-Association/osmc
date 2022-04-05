@@ -85,7 +85,10 @@ public class Test {
 
         PortFmi2Api rbmqFmuSeqnoPort = rbmqInstance.getPort("seqno");
         rbmqInstance.getAndShare(rbmqFmuSeqnoPort);
-        dataWriterInstance.initialize(osmcOutOfSyncPort, rbmqFmuSeqnoPort);
+
+        PortFmi2Api osmcTimeDiscPort = osmcInstance.getPort("timedisc");
+        osmcInstance.getAndShare(osmcTimeDiscPort);
+        dataWriterInstance.initialize(osmcOutOfSyncPort, rbmqFmuSeqnoPort, osmcTimeDiscPort);
 
         dataWriterInstance.log(currentCommunicationPoint);
 
