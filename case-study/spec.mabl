@@ -1,0 +1,461 @@
+simulation 
+import FMI2;
+import FMI2Extension;
+import Logger;
+import DataWriter;
+import ConsolePrinter;
+@Framework( "FMI2");
+{
+ 	int fMI_DISCARD = 2;
+	int fMI_OK = 0;
+	int FMI_FATAL = 4;
+	int FMI_ERROR = 3;
+	int status = 0;
+	FMI2Extension fMI2Extension;
+	FMI2 osmc = null;
+	Logger logger;
+	FMI2Component osmcInstance = null;
+	bool osmcinstanceCurrentTimeFullStep = true;
+	real osmcinstanceCurrentTime = 0.0;
+	bool osmcinstanceBoolShare[1];
+	bool osmcinstanceBoolIo[5];
+	int osmcinstanceIntIo[5];
+	uint osmcinstanceUintVref[5];
+	FMI2 rbmqfmu = null;
+	FMI2Component rbmqInstance = null;
+	real rbmqinstanceRealShare[2];
+	real rbmqinstanceRealIo[18];
+	bool rbmqinstanceCurrentTimeFullStep = true;
+	real rbmqinstanceCurrentTime = 0.0;
+	int rbmqinstanceIntShare[1];
+	bool rbmqinstanceBoolIo[18];
+	int rbmqinstanceIntIo[18];
+	uint rbmqinstanceUintVref[18];
+	DataWriter dataWriter;
+	ConsolePrinter consolePrinter;
+	try 
+	{
+		consolePrinter = load("ConsolePrinter");
+		if( (consolePrinter == null) )
+		{
+				error "Failed load of: consolePrinter";
+		}
+		dataWriter = load("DataWriter");
+		if( (dataWriter == null) )
+		{
+				error "Failed load of: dataWriter";
+		}
+		logger = load("Logger");
+		if( (logger == null) )
+		{
+				error "Failed load of: logger";
+		}
+		real startTime = 0.0;
+		real endTime = 10.0;
+		real step_size_minimum = 0.1;
+		real step_size_maximum = 6.0;
+		real step_size_default = 0.1;
+		bool mitigate = false;
+		real currentCommunicationPoint = 0.0;
+		real current_step_size = 0.0;
+		current_step_size = step_size_default;
+		fMI2Extension = load("FMI2Extension");
+		if( (fMI2Extension == null) )
+		{
+				error "Failed load of: fMI2Extension";
+		}
+		osmc = load("FMI2", "{cfc65592-ffff-4563-9705-1581b6e7071c}", "/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/osmc.fmu");
+		if( (osmc == null) )
+		{
+				logger.log(4, "FMU load failed on fmu: '%s' for uri: '/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/osmc.fmu'", "osmc");
+				error "FMU load failed on fmu: 'osmc' for uri: '/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/osmc.fmu'";
+		}
+		osmcInstance = osmc.instantiate("osmcInstance", true, true);
+		if( (osmcInstance == null) )
+		{
+				logger.log(4, "Instantiate failed on fmu: '%s' for instance: '%s'", "osmc", "osmcInstance");
+				error "Instantiate failed on fmu: 'osmc' for instance: 'osmcInstance'";
+		}
+		osmcinstanceUintVref[0] = 0;
+		osmcinstanceIntIo[0] = 500;
+		status = osmcInstance.setInteger(osmcinstanceUintVref, 1, osmcinstanceIntIo);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "SetInteger failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "SetInteger failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'setInteger' on 'osmcInstance'";
+		}
+		status = osmcInstance.setupExperiment(false, 0.0, startTime, true, endTime);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "SetupExperiment failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "SetupExperiment failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'setupExperiment' on 'osmcInstance'";
+		}
+		status = osmcInstance.enterInitializationMode();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "EnterInitializationMode failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "EnterInitializationMode failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'enterInitializationMode' on 'osmcInstance'";
+		}
+		osmcinstanceUintVref[0] = 2;
+		status = osmcInstance.getBoolean(osmcinstanceUintVref, 1, osmcinstanceBoolIo);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "GetBoolean failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "GetBoolean failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'getBoolean' on 'osmcInstance'";
+		}
+		osmcinstanceBoolShare[0] = osmcinstanceBoolIo[0];
+		status = osmcInstance.exitInitializationMode();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "ExitInitializationMode failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "ExitInitializationMode failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'exitInitializationMode' on 'osmcInstance'";
+		}
+		rbmqfmu = load("FMI2", "{cfc65592-ffff-4563-9705-1581b6e7071c}", "/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/rabbitmq_cs_1.fmu");
+		if( (rbmqfmu == null) )
+		{
+				logger.log(4, "FMU load failed on fmu: '%s' for uri: '/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/rabbitmq_cs_1.fmu'", "rbmqfmu");
+				error "FMU load failed on fmu: 'rbmqfmu' for uri: '/Users/au674354/IdeaProjects/osmc/case-study/maestro-extension/fmi2extension-bundle/target/test-classes/fmi2extension/rabbitmq_cs_1.fmu'";
+		}
+		rbmqInstance = rbmqfmu.instantiate("rbmqInstance", true, true);
+		if( (rbmqInstance == null) )
+		{
+				logger.log(4, "Instantiate failed on fmu: '%s' for instance: '%s'", "rbmqfmu", "rbmqInstance");
+				error "Instantiate failed on fmu: 'rbmqfmu' for instance: 'rbmqInstance'";
+		}
+		status = rbmqInstance.setupExperiment(false, 0.0, startTime, true, endTime);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "SetupExperiment failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "SetupExperiment failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'setupExperiment' on 'rbmqInstance'";
+		}
+		rbmqinstanceUintVref[0] = 7;
+		rbmqinstanceIntIo[0] = 200;
+		status = rbmqInstance.setInteger(rbmqinstanceUintVref, 1, rbmqinstanceIntIo);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "SetInteger failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "SetInteger failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'setInteger' on 'rbmqInstance'";
+		}
+		status = rbmqInstance.enterInitializationMode();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "EnterInitializationMode failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "EnterInitializationMode failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'enterInitializationMode' on 'rbmqInstance'";
+		}
+		rbmqinstanceUintVref[0] = 102;
+		rbmqinstanceBoolIo[0] = osmcinstanceBoolShare[0];
+		status = rbmqInstance.setBoolean(rbmqinstanceUintVref, 1, rbmqinstanceBoolIo);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "SetBoolean failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "SetBoolean failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'setBoolean' on 'rbmqInstance'";
+		}
+		status = rbmqInstance.exitInitializationMode();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "ExitInitializationMode failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "ExitInitializationMode failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'exitInitializationMode' on 'rbmqInstance'";
+		}
+		rbmqinstanceUintVref[0] = 14;
+		status = rbmqInstance.getInteger(rbmqinstanceUintVref, 1, rbmqinstanceIntIo);
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "GetInteger failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "GetInteger failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'getInteger' on 'rbmqInstance'";
+		}
+		rbmqinstanceIntShare[0] = rbmqinstanceIntIo[0];
+		string datawriter_headers[2] = { "osmc.osmcInstance.outofsync" , "rbmqfmu.rbmqInstance.seqno" };
+		DataWriterConfig datawriter_configuration = dataWriter.writeHeader(datawriter_headers);
+		dataWriter.writeDataPoint(datawriter_configuration, currentCommunicationPoint, osmcinstanceBoolShare[0], rbmqinstanceIntShare[0]);
+		real osmcMaxStepSize = 0.0;
+		osmcMaxStepSize = step_size_default;
+		real rbmqMaxStepSize = 0.0;
+		rbmqMaxStepSize = step_size_default;
+		while( (currentCommunicationPoint + current_step_size <= endTime) )
+		{
+			consolePrinter.print("time %f", currentCommunicationPoint);
+			logger.log(4, "current step size %f", current_step_size);
+			status = osmcInstance.doStep(currentCommunicationPoint, current_step_size, false);
+			if( (status == FMI_ERROR || status == FMI_FATAL) )
+			{
+					if( (status == FMI_ERROR) )
+					{
+							logger.log(4, "DoStep failed on '%s' with status: FMI_ERROR", osmcInstance);
+					}
+					if( (status == FMI_FATAL) )
+					{
+							logger.log(4, "DoStep failed on '%s' with status: FMI_FATAL", osmcInstance);
+					}
+					error "Failed to 'doStep' on 'osmcInstance'";
+			}
+			if( (status != fMI_OK) )
+			{
+					if( (status == fMI_DISCARD) )
+					{
+							status = osmcInstance.getRealStatus(2, ref osmcinstanceCurrentTime);
+							osmcinstanceCurrentTimeFullStep = false;
+					}
+			}
+			else
+			{
+					osmcinstanceCurrentTime = currentCommunicationPoint + current_step_size;
+					osmcinstanceCurrentTimeFullStep = true;
+			}
+			status = rbmqInstance.doStep(currentCommunicationPoint, current_step_size, false);
+			if( (status == FMI_ERROR || status == FMI_FATAL) )
+			{
+					if( (status == FMI_ERROR) )
+					{
+							logger.log(4, "DoStep failed on '%s' with status: FMI_ERROR", rbmqInstance);
+					}
+					if( (status == FMI_FATAL) )
+					{
+							logger.log(4, "DoStep failed on '%s' with status: FMI_FATAL", rbmqInstance);
+					}
+					error "Failed to 'doStep' on 'rbmqInstance'";
+			}
+			if( (status != fMI_OK) )
+			{
+					if( (status == fMI_DISCARD) )
+					{
+							status = rbmqInstance.getRealStatus(2, ref rbmqinstanceCurrentTime);
+							rbmqinstanceCurrentTimeFullStep = false;
+					}
+			}
+			else
+			{
+					rbmqinstanceCurrentTime = currentCommunicationPoint + current_step_size;
+					rbmqinstanceCurrentTimeFullStep = true;
+			}
+			currentCommunicationPoint = currentCommunicationPoint + current_step_size;
+			rbmqinstanceUintVref[0] = 14;
+			status = rbmqInstance.getInteger(rbmqinstanceUintVref, 1, rbmqinstanceIntIo);
+			if( (status == FMI_ERROR || status == FMI_FATAL) )
+			{
+					if( (status == FMI_ERROR) )
+					{
+							logger.log(4, "GetInteger failed on '%s' with status: FMI_ERROR", rbmqInstance);
+					}
+					if( (status == FMI_FATAL) )
+					{
+							logger.log(4, "GetInteger failed on '%s' with status: FMI_FATAL", rbmqInstance);
+					}
+					error "Failed to 'getInteger' on 'rbmqInstance'";
+			}
+			rbmqinstanceUintVref[0] = 100;
+			rbmqinstanceUintVref[1] = 101;
+			status = rbmqInstance.getReal(rbmqinstanceUintVref, 2, rbmqinstanceRealIo);
+			if( (status == FMI_ERROR || status == FMI_FATAL) )
+			{
+					if( (status == FMI_ERROR) )
+					{
+							logger.log(4, "GetReal failed on '%s' with status: FMI_ERROR", rbmqInstance);
+					}
+					if( (status == FMI_FATAL) )
+					{
+							logger.log(4, "GetReal failed on '%s' with status: FMI_FATAL", rbmqInstance);
+					}
+					error "Failed to 'getReal' on 'rbmqInstance'";
+			}
+			rbmqinstanceRealShare[0] = rbmqinstanceRealIo[0];
+			rbmqinstanceRealShare[1] = rbmqinstanceRealIo[1];
+			rbmqinstanceIntShare[0] = rbmqinstanceIntIo[0];
+			osmcinstanceUintVref[0] = 2;
+			status = osmcInstance.getBoolean(osmcinstanceUintVref, 1, osmcinstanceBoolIo);
+			if( (status == FMI_ERROR || status == FMI_FATAL) )
+			{
+					if( (status == FMI_ERROR) )
+					{
+							logger.log(4, "GetBoolean failed on '%s' with status: FMI_ERROR", osmcInstance);
+					}
+					if( (status == FMI_FATAL) )
+					{
+							logger.log(4, "GetBoolean failed on '%s' with status: FMI_FATAL", osmcInstance);
+					}
+					error "Failed to 'getBoolean' on 'osmcInstance'";
+			}
+			osmcinstanceBoolShare[0] = osmcinstanceBoolIo[0];
+			mitigate = osmcinstanceBoolShare[0];
+			dataWriter.writeDataPoint(datawriter_configuration, currentCommunicationPoint, osmcinstanceBoolShare[0], rbmqinstanceIntShare[0]);
+			if( (mitigate) )
+			{
+					real tmp = fMI2Extension.getMaxStepSize(osmcInstance);
+					osmcMaxStepSize = tmp;
+					logger.log(4, "osmc maxstep %f", osmcMaxStepSize);
+					real tmp1 = fMI2Extension.getMaxStepSize(rbmqInstance);
+					rbmqMaxStepSize = tmp1;
+					logger.log(4, "rabbitmq maxstep %f", rbmqMaxStepSize);
+					if( (rbmqMaxStepSize < osmcMaxStepSize) )
+					{
+							current_step_size = rbmqMaxStepSize;
+					}
+					else
+					{
+							current_step_size = osmcMaxStepSize;
+					}
+					if( (current_step_size > step_size_maximum) )
+					{
+							logger.log(4, "setting maximum %f", step_size_maximum);
+							current_step_size = step_size_maximum;
+					}
+					else
+					{
+							if( (current_step_size < step_size_minimum) )
+							{
+									current_step_size = step_size_minimum;
+							}
+					}
+			}
+			else
+			{
+					current_step_size = step_size_default;
+			}
+		}
+		status = osmcInstance.terminate();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "Terminate failed on '%s' with status: FMI_ERROR", osmcInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "Terminate failed on '%s' with status: FMI_FATAL", osmcInstance);
+				}
+				error "Failed to 'terminate' on 'osmcInstance'";
+		}
+		status = rbmqInstance.terminate();
+		if( (status == FMI_ERROR || status == FMI_FATAL) )
+		{
+				if( (status == FMI_ERROR) )
+				{
+						logger.log(4, "Terminate failed on '%s' with status: FMI_ERROR", rbmqInstance);
+				}
+				if( (status == FMI_FATAL) )
+				{
+						logger.log(4, "Terminate failed on '%s' with status: FMI_FATAL", rbmqInstance);
+				}
+				error "Failed to 'terminate' on 'rbmqInstance'";
+		}
+		dataWriter.close();
+	}	finally 
+	{
+		if( (consolePrinter != null) )
+		{
+				unload(consolePrinter);
+				consolePrinter = null;
+		}
+		if( (dataWriter != null) )
+		{
+				unload(dataWriter);
+				dataWriter = null;
+		}
+		if( (rbmqInstance != null) )
+		{
+				rbmqfmu.freeInstance(rbmqInstance);
+				rbmqInstance = null;
+		}
+		if( (rbmqfmu != null) )
+		{
+				unload(rbmqfmu);
+				rbmqfmu = null;
+		}
+		if( (osmcInstance != null) )
+		{
+				osmc.freeInstance(osmcInstance);
+				osmcInstance = null;
+		}
+		if( (logger != null) )
+		{
+				unload(logger);
+				logger = null;
+		}
+		if( (osmc != null) )
+		{
+				unload(osmc);
+				osmc = null;
+		}
+		if( (fMI2Extension != null) )
+		{
+				unload(fMI2Extension);
+				fMI2Extension = null;
+		}
+	}
+}
