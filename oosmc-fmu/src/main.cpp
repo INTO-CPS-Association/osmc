@@ -31,7 +31,7 @@
 #define GetCurrentDir getcwd
 #endif
 
-using namespace std;
+/* using namespace std; */
 
 inline int ParseInt(const char *value) {
     return std::strtol(value, nullptr, 10);
@@ -59,7 +59,7 @@ std::time_t ParseISO8601(const std::string &input) {
 
 void showStatus(const char *what, fmi2Status status) {
     const char **statuses = new const char *[6]{"ok", "warning", "discard", "error", "fatal", "pending"};
-    cout << "Executed '" << what << "' with status '" << statuses[status] << "'" << endl;
+    std::cout << "Executed '" << what << "' with status '" << statuses[status] << "'" << std::endl;
 
     if (status != fmi2OK) {
         throw status;
@@ -68,7 +68,7 @@ void showStatus(const char *what, fmi2Status status) {
 
 int main(int argc, char *argv[]) {
     {
-        cout << " Simulation test for FMI " << fmi2GetVersion() << endl;
+        std::cout << " Simulation test for FMI " << fmi2GetVersion() << std::endl;
 
         if (argc > 2) {
             std::cerr << "Usage: " << argv[0] << " [MODEL_DESCRIPTION_PATH]" << std::endl;
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         path[sizeof(path) - 1] = '\0'; /* not really required */
 
 
-        cout << "Working directory is " << path << endl;
+        std::cout << "Working directory is " << path << std::endl;
 
         /* std::filesystem::create_directory("log"); */
         int fileIndex = 0;
@@ -104,17 +104,17 @@ int main(int argc, char *argv[]) {
             fileName = fileNameBase + std::to_string(fileIndex) + fileNameExt;
         }
 
-        ofstream file(fileName.c_str());
+        std::ofstream file(fileName.c_str());
         if (!file.is_open())
         {
-            cout << "Failed to open log file" << endl;
+            std::cout << "Failed to open log file" << std::endl;
             return 1;
         }
 
         fmi2String instanceName = "rabbitmq";
         fmi2Type fmuType = fmi2CoSimulation;
         fmi2String fmuGUID = "63ba49fe-07d3-402c-b9db-2df495167424";
-        string currentUri = (string("file://") + string(path));
+        std::string currentUri = (std::string("file://") + std::string(path));
         fmi2String fmuResourceLocation = currentUri.c_str();
         const fmi2CallbackFunctions *functions = nullptr;
         fmi2Boolean visible = false;
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
             showStatus("fmi2EnterInitializationMode", fmi2EnterInitializationMode(c));
             showStatus("fmi2ExitInitializationMode", fmi2ExitInitializationMode(c));
 
-            cout << "Initialization one"<<endl;
+            std::cout << "Initialization one"<<std::endl;
 
 #define RABBITMQ_FMU_LEVEL 100
 
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
 
             showStatus("fmi2GetReal", fmi2GetReal(c, vr, nvr, value));
             for (int i = 0; i < nvr; i++) {
-                cout << "Ref: '" << vr[i] << "' Value '" << value[i] << "'" << endl;
+                std::cout << "Ref: '" << vr[i] << "' Value '" << value[i] << "'" << std::endl;
             }
 
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
                         file << ", ";
                     else
                         file << "\n";
-                    cout << "Ref: '" << vr[i] << "' Value '" << setprecision(10) << value[i] << "'" << endl;
+                    std::cout << "Ref: '" << vr[i] << "' Value '" << std::setprecision(10) << value[i] << "'" << std::endl;
                 }
 
                 currentCommunicationPoint = currentCommunicationPoint + communicationStepSize;
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
                 if(changeInput){
                     showStatus("fmi2SetReal", fmi2SetReal(c, vrefsReals, 1, reals));
                     showStatus("fmi2SetString", fmi2SetString(c, vrefsStrs, 1, strs));
-                    cout << "SHOULD have updated" << endl;
+                    std::cout << "SHOULD have updated" << std::endl;
                 }
                 else{
 
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
 
 //        fmi2Terminate(fmi2Component c)
         } catch (const char *status) {
-            cout << "Error " << status << endl;
+            std::cout << "Error " << status << std::endl;
         }
         fmi2FreeInstance(c);
 
