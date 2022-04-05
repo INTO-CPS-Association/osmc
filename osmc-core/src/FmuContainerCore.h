@@ -104,6 +104,7 @@ public:
     void checkThreshold();
 
     bool getOutOfSync();
+    int getTimeDiscrepancy();
 
 
     void setWebserverHostname(fmi2String const string);
@@ -148,6 +149,7 @@ private:
     int port = 8080;
     Webserver webserver;
     std::function<bool(void)> webserverHandler;
+    std::atomic<int> timeDisc = std::atomic<int>(0);
 
 
     bool webserverStarted = false;

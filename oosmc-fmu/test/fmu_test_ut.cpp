@@ -53,7 +53,7 @@ namespace {
         fmi2String fmuResourceLocation = currentUri.c_str();
         const fmi2CallbackFunctions *functions = nullptr;
         fmi2Boolean visible = false;
-        fmi2Boolean loggingOn = false;
+        fmi2Boolean loggingOn = true;
 
 
         auto c = fmi2Instantiate(
@@ -107,6 +107,13 @@ namespace {
             }
             oos = booleanValues[0];
 
+            int nvrInt = 1;
+            int intValues[nvrInt];
+            integerValrefs[0]=5;
+            showStatus("fmi2GetInteger", fmi2GetInteger(c, integerValrefs, 1, intValues));
+            for (int i = 0; i < nvrInt; i++) {
+                cout << "Ref: '" << integerValrefs[i] << "' Value '" << intValues[i] << "'" << endl;
+            }
 
         fmi2Terminate(c);
         } catch (const char *status) {

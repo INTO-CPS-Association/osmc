@@ -40,6 +40,10 @@
             <Integer start="5672"/>
         </ScalarVariable>
 
+        <ScalarVariable name="timedisc" valueReference="5" variability="discrete" causality="output">
+            <Integer start="0"/>
+        </ScalarVariable>
+
     </ModelVariables>
     <ModelStructure>
         <Outputs>
