@@ -12,7 +12,7 @@
 #define timegm _mkgmtime
 #endif
 
-#include <filesystem>
+/* #include <filesystem> */
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
         cout << "Working directory is " << path << endl;
 
-        std::filesystem::create_directory("log");
+        /* std::filesystem::create_directory("log"); */
         int fileIndex = 0;
         std::string fileNameBase = "log/log";
         std::string fileNameExt = ".csv";
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
                 auto t2 = std::chrono::high_resolution_clock::now();
                 auto dur = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 
-                file << currentCommunicationPoint << ", " << dur << ", "; 
+                file << currentCommunicationPoint << ", " << dur << ", ";
                 showStatus("fmi2GetReal", fmi2GetReal(c, vr, nvr, value));
                 for (int i = 0; i < nvr; i++) {
                     file << value[i];
