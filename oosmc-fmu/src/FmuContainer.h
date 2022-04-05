@@ -29,6 +29,7 @@ const int realTimeCheckIntervalID = 1;
 const int outOfSyncId = 2;
 const int webServerHostnameId = 3;
 const int webServerPortId = 4;
+const int timeDiscId = 5;
 
 using namespace std;
 

@@ -93,9 +93,11 @@ void FmuContainerCore::checkThreshold() {
             this->outOfSyncCallbackFunction(tdiff, this->getSafeTolerance());
         }
         this->outOfSync.store(true);
+        this->timeDisc.store(tdiff);
     }
     else {
         this->outOfSync.store(false);
+        this->timeDisc.store(tdiff);
         if(this->inSyncCallbackFunction)
             this->inSyncCallbackFunction();
     }
@@ -164,6 +166,10 @@ int FmuContainerCore::getRealTimeCheckInterval() {
 
 bool FmuContainerCore::getOutOfSync() {
     return this->outOfSync.load();
+}
+
+int FmuContainerCore::getTimeDiscrepancy() {
+    return this->timeDisc.load();
 }
 
 void FmuContainerCore::setWebserverHostname(fmi2String webServerHostname) {

@@ -132,7 +132,7 @@ bool FmuContainer::getBoolean(const fmi2ValueReference *vr, size_t nvr, fmi2Bool
 }
 
 bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Integer *value) {
-    if (nvr > 2 || nvr == 0)
+    if (nvr > 3 || nvr == 0)
     {
         FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "getInteger received invalid arguments. nvr expected: 1 to 2, actual: %zu. ",
                          nvr);
@@ -145,8 +145,10 @@ bool FmuContainer::getInteger(const fmi2ValueReference *vr, size_t nvr, fmi2Inte
                 value[i] = this->core.getSafeTolerance();
             else if (vr[i] == realTimeCheckIntervalID)
                 value[i] = this->core.getRealTimeCheckInterval();
+            else if (vr[i] == timeDiscId)
+                value[i] = this->core.getTimeDiscrepancy();
             else {
-                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 0 to 1, actual: %i. ",
+                FmuContainer_LOG(fmi2Fatal, "logStatusFatal", "setInteger received invalid arguments. Value references allowed: 0 to 2, actual: %i. ",
                                  vr[i]);
                 return false;
             }
