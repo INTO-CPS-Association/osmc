@@ -73,6 +73,9 @@
          <ScalarVariable name="outofsync" valueReference="15" variability="discrete" causality="input">
             <Boolean start="false"/>
          </ScalarVariable>
+         <ScalarVariable name="int_in" valueReference="102" variability="discrete" causality="input">
+            <Integer start="0"/>
+         </ScalarVariable>
       </ModelVariables>
       <ModelStructure>
          <Outputs>

@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Test {
-    double MAXIMUM_STEP_SIZE = 6.0;
+    double MAXIMUM_STEP_SIZE = 2.0;
     double MINIMUM_STEP_SIZE = 0.1;
     public static String outputs_csv = "outputs.csv";
     @org.junit.Test
@@ -46,7 +46,8 @@ public class Test {
         current_step_size.setValue(step_size_default);
 
         File osmcFMUFile = new File(this.getClass().getResource("/fmi2extension/osmc.fmu").getFile());
-        File rabbitMQFMUFile = new File(this.getClass().getResource("/fmi2extension/rabbitmq_cs_1.fmu").getFile());
+        File rabbitMQFMUFile = new File(this.getClass().getResource("/fmi2extension/rmqfmu-osa.fmu").getFile());
+        File increasingIntFMUFile = new File(this.getClass().getResource("/fmi2extension/increasing_int.fmu").getFile());
 
         // Load the fmi2Exntesion runtime module
         RuntimeModuleVariable fmi2Extension = builder.loadRuntimeModule("FMI2Extension");
@@ -80,6 +81,20 @@ public class Test {
         rbmqInstance.exitInitializationMode();
         // RBMQInstance ready
 
+        FmuVariableFmi2Api incIntFMU = scope.createFMU("incInt", "FMI2", URI.create(increasingIntFMUFile.getAbsolutePath()).toString());
+        ComponentVariableFmi2Api incIntInstance = incIntFMU.instantiate("incIntInstance");
+
+        // Link the ports
+        PortFmi2Api incIntOutPort = incIntInstance.getPort("int_out");
+        PortFmi2Api rbmqFmuIntInPort = rbmqInstance.getPort("int_in");
+        incIntOutPort.linkTo(rbmqFmuIntInPort);
+
+        incIntInstance.setupExperiment(startTime, endTime, null);
+        incIntInstance.enterInitializationMode();
+        incIntInstance.setLinked();
+        incIntInstance.exitInitializationMode();
+        // IncIntInstance ready
+
         DataWriter dataWriter = builder.getDataWriter();
         DataWriter.DataWriterInstance dataWriterInstance = dataWriter.createDataWriterInstance();
 
@@ -88,7 +103,10 @@ public class Test {
 
         PortFmi2Api osmcTimeDiscPort = osmcInstance.getPort("timedisc");
         osmcInstance.getAndShare(osmcTimeDiscPort);
-        dataWriterInstance.initialize(osmcOutOfSyncPort, rbmqFmuSeqnoPort, osmcTimeDiscPort);
+
+        PortFmi2Api incOutPort = incIntInstance.getPort("int_out");
+        incIntInstance.getAndShare(incOutPort);
+        dataWriterInstance.initialize(osmcOutOfSyncPort, rbmqFmuSeqnoPort, osmcTimeDiscPort, incOutPort);
 
         dataWriterInstance.log(currentCommunicationPoint);
 
@@ -107,11 +125,13 @@ public class Test {
 
             Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step = osmcInstance.step(currentCommunicationPoint, current_step_size);
             Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step2 = rbmqInstance.step(currentCommunicationPoint, current_step_size);
+            Map.Entry<Fmi2Builder.BoolVariable<PStm>, Fmi2Builder.DoubleVariable<PStm>> step3 = incIntInstance.step(currentCommunicationPoint, current_step_size);
 
             currentCommunicationPoint.setValue(currentCommunicationPoint.toMath().addition(current_step_size));
             // Get state of all FMUs
             rbmqInstance.getAndShare();
             osmcInstance.getAndShare();
+            incIntInstance.getAndShare();
 
             // set mitigate = out of sync
             mitigate.setValue(osmcOutOfSyncPort.getSharedAsVariable());
@@ -177,6 +197,7 @@ public class Test {
 
         osmcInstance.terminate();
         rbmqInstance.terminate();
+        incIntInstance.terminate();
 
         dataWriterInstance.close();
         ASimulationSpecificationCompilationUnit spec = builder.build();
