@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Test {
-    double MAXIMUM_STEP_SIZE = 2.0;
+    double MAXIMUM_STEP_SIZE = 6.0;
     double MINIMUM_STEP_SIZE = 0.1;
     public static String outputs_csv = "outputs.csv";
     @org.junit.Test
@@ -68,10 +68,24 @@ public class Test {
         FmuVariableFmi2Api rbmqFMU = scope.createFMU("rbmqfmu", "FMI2", URI.create(rabbitMQFMUFile.getAbsolutePath()).toString());
         ComponentVariableFmi2Api rbmqInstance = rbmqFMU.instantiate("rbmqInstance");
 
+
+        FmuVariableFmi2Api incIntFMU = scope.createFMU("incInt", "FMI2", URI.create(increasingIntFMUFile.getAbsolutePath()).toString());
+        ComponentVariableFmi2Api incIntInstance = incIntFMU.instantiate("incIntInstance");
+
+        incIntInstance.setupExperiment(startTime, endTime, null);
+        incIntInstance.enterInitializationMode();
+        incIntInstance.getAndShare();
+        incIntInstance.exitInitializationMode();
+        // IncIntInstance ready
+
         // Link the ports
         PortFmi2Api osmcOutOfSyncPort = osmcInstance.getPort("outofsync");
         PortFmi2Api rbmqFmuOutOfSyncPort = rbmqInstance.getPort("outofsync");
         osmcOutOfSyncPort.linkTo(rbmqFmuOutOfSyncPort);
+
+        PortFmi2Api incIntOutPort = incIntInstance.getPort("int_out");
+        PortFmi2Api rbmqFmuIntInPort = rbmqInstance.getPort("int_in");
+        incIntOutPort.linkTo(rbmqFmuIntInPort);
 
         rbmqInstance.setupExperiment(startTime, endTime, null);
         PortFmi2Api maxage = rbmqInstance.getPort("config.maxage");
@@ -81,19 +95,6 @@ public class Test {
         rbmqInstance.exitInitializationMode();
         // RBMQInstance ready
 
-        FmuVariableFmi2Api incIntFMU = scope.createFMU("incInt", "FMI2", URI.create(increasingIntFMUFile.getAbsolutePath()).toString());
-        ComponentVariableFmi2Api incIntInstance = incIntFMU.instantiate("incIntInstance");
-
-        // Link the ports
-        PortFmi2Api incIntOutPort = incIntInstance.getPort("int_out");
-        PortFmi2Api rbmqFmuIntInPort = rbmqInstance.getPort("int_in");
-        incIntOutPort.linkTo(rbmqFmuIntInPort);
-
-        incIntInstance.setupExperiment(startTime, endTime, null);
-        incIntInstance.enterInitializationMode();
-        incIntInstance.setLinked();
-        incIntInstance.exitInitializationMode();
-        // IncIntInstance ready
 
         DataWriter dataWriter = builder.getDataWriter();
         DataWriter.DataWriterInstance dataWriterInstance = dataWriter.createDataWriterInstance();
@@ -132,6 +133,8 @@ public class Test {
             rbmqInstance.getAndShare();
             osmcInstance.getAndShare();
             incIntInstance.getAndShare();
+
+            rbmqInstance.setLinked();
 
             // set mitigate = out of sync
             mitigate.setValue(osmcOutOfSyncPort.getSharedAsVariable());
