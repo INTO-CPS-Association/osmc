@@ -1,7 +1,7 @@
-The co-simulation setup is as follows: the rabbitmq fmu is coupled to the osmc fmu, where the output of the osmc is fed to the rabbitmq fmu.
+The co-simulation setup is as follows: the rabbitmq fmu is coupled to the OSA fmu, where the output of the OSA is fed to the rabbitmq fmu.
 The configuration files are the ```multimodel.json``` and ```coe.json```.
 
-In order to feed data to the cosimulation, the following should be setup:
+In order to feed data to the co-simulation, the following should be setup:
 
 ```bash
 cd server
