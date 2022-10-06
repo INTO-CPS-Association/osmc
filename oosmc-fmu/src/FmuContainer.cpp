@@ -80,7 +80,7 @@ bool FmuContainer::step(fmi2Real currentCommunicationPoint, fmi2Real communicati
     // Multiple by 1000 due to seconds -> milliseconds
     this->core.setCurrentSimulationTime((currentCommunicationPoint + communicationStepSize)*1000);
     this->core.checkThreshold();
-    long long int milliSecondsSinceEpoch = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    long long int milliSecondsSinceEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     FmuContainer_LOG(fmi2OK, "logAll", "Current step: %f, wct (msSinceEpoch): %llu", currentCommunicationPoint, milliSecondsSinceEpoch);
     return true;
