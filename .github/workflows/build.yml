@@ -49,6 +49,7 @@ jobs:
             make
 
         - name: make test
+          if: matrix.os != 'windows-latest'
           run: |
             make test
 
